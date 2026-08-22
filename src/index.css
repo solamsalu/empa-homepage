@@ -1,13 +1,40 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+
+/* src/index.css */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 
+  =============================================================
+  --- THIS IS THE FIX ---
+  Define global CSS variables here. This makes them accessible
+  to all components and Tailwind utility classes.
+  =============================================================
+*/
+
+
+
+/* Your existing custom utilities are perfectly fine */
+@layer utilities {
+    .transform-style-3d { transform-style: preserve-3d; }
+    .perspective-1000 { perspective: 1000px; }
+    .rotate-y-25 { transform: rotateY(25deg); }
+    .rotate-y-180 { transform: rotateY(180deg); }
+    .rotate-y--90 { transform: rotateY(-90deg); }
+    .backface-hidden { backface-visibility: hidden; }
+    .transform-origin-left { transform-origin: left; }
+    .translate-x-neg-full { transform: translateX(-100%); }
+    .writing-mode-vertical-rl { writing-mode: vertical-rl; }
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+/* Add to your global CSS */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+/* Add to your global CSS for that smooth journal "pop" */
+.group:hover .journal-cover-wrapper {
+    transform: translateY(-5px) scale(1.02);
+    transition: all 0.3s ease-in-out;
 }
