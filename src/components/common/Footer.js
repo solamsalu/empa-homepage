@@ -109,7 +109,7 @@ const SocialIcons = () => {
         <SocialIcon
           key={link.name}
           url={link.href}
-          style={{ height: 30, width: 30 }} 
+          style={{ height: 30, width: 30 }}
           className="hover:scale-110 transition-transform"
           target="_blank"
           rel="noopener noreferrer"
@@ -128,7 +128,7 @@ const Footer = () => {
     { name: 'Membership', href: '/membership' },
   ];
   const programsLinks = [
-    { name: 'Conferences', href: '/events' },
+    { name: 'Conferences', href: '/conferences' },
     { name: 'Olympiad', href: '/olympiad' },
     { name: 'Journals', href: '/journals' },
   ];
