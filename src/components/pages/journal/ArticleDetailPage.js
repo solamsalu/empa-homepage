@@ -5,7 +5,7 @@ import { API_BASE_URL, STATIC_ASSETS_BASE_URL } from '../../../utils/constants';
 import { Download, Book, Eye, Quote, Share2, Calendar, FileText } from 'lucide-react';
 import HtmlContentRenderer from '../../common/HtmlContentRenderer';
 import LatexRenderer from '../../common/LatexRenderer';
-
+import { generateDoi } from '../../../utils/doiHelper';
 
 const ArticleDetailPage = () => {
     const { paperId } = useParams();
@@ -68,7 +68,9 @@ const ArticleDetailPage = () => {
 
     const pubYear = paper.publication_date ? new Date(paper.publication_date).getFullYear() : new Date().getFullYear();
     // const citation = `${paper.author_name} (${pubYear}). "${paper.title.replace(/<[^>]+>/g, '')}". JEMPA, Vol ${paper.volume_number}(${paper.issue_number}). DOI: 10.66894/jempa.${paper.id}`;
-    const doi = `10.66894/jempa.${paper.id}`;
+    // const doi = `10.66894/jempa.${paper.id}`;
+    const doi = generateDoi(paper);
+
     return (
         <div className="bg-[#f8fafc] min-h-screen pb-10 pt-14 md:pt-22">
             {/* Header / Breadcrumbs */}
@@ -138,7 +140,7 @@ const ArticleDetailPage = () => {
                             {citation}
                         </div>
                     </section> */}
-                    <section className="bg-slate-100 text-slate-900 p-8 rounded-3xl shadow-xl">
+                    {/* <section className="bg-slate-100 text-slate-900 p-8 rounded-3xl shadow-xl">
   <h3 className="text-xs font-black text-blue-600 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
     <Quote size={16}/> Suggested Citation
   </h3>
@@ -148,8 +150,20 @@ const ArticleDetailPage = () => {
     <em>JEMPA</em>, Vol. {paper.volume_number}({paper.issue_number}). 
     DOI: 10.66894/jempa.{paper.id}
   </div>
-</section>
+</section> */}
 
+                    {/* Suggested Citation Section */}
+                    <section className="bg-slate-100 text-slate-900 p-8 rounded-3xl shadow-xl">
+                        <h3 className="text-xs font-black text-blue-600 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                            <Quote size={16} /> Suggested Citation
+                        </h3>
+                        <div className="text-sm font-mono leading-relaxed bg-white p-4 rounded-2xl border border-slate-200">
+                            {paper.author_name} ({pubYear}).{' '}
+                            <LatexRenderer content={paper.title} />.{' '}
+                            <em>Hissab (JEMPA)</em>, Vol. {paper.volume_number}({paper.issue_number}).{' '}
+                            DOI: {doi}
+                        </div>
+                    </section>
                 </div>
 
                 {/* Sidebar Actions */}
@@ -191,9 +205,13 @@ const ArticleDetailPage = () => {
                                     <span className="text-slate-400">Subject:</span>
                                     <span className="font-bold text-slate-700">{paper.specialization}</span>
                                 </div>
-                                <div className="flex justify-between text-xs">
+                                {/* <div className="flex justify-between text-xs">
                                     <span className="text-slate-400">DOI:</span>
                                     <span className="font-bold text-blue-600">10.66894/jempa.{paper.id}</span>
+                                </div> */}
+                                <div className="flex justify-between text-xs">
+                                    <span className="text-slate-400">DOI:</span>
+                                    <span className="font-bold text-blue-600">{doi}</span>
                                 </div>
                             </div>
                         </div>
