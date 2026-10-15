@@ -6,12 +6,14 @@ import axios from 'axios';
 import { AuthContext } from '../../../context/AuthContext';
 import { API_BASE_URL } from '../../../utils/constants';
 import PrimaryButton from '../../common/PrimaryButton';
-import { LogIn, UserPlus, CheckCircle2, ShieldAlert } from 'lucide-react';
+import { LogIn, UserPlus, CheckCircle2, ShieldAlert, Eye, EyeOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const SubmissionGatewayPage = () => {
     const { handleLogin, isLoggedIn } = useContext(AuthContext);
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [showRegisterForm, setShowRegisterForm] = useState(false);
     const navigate = useNavigate();
 
@@ -34,7 +36,7 @@ const SubmissionGatewayPage = () => {
         const minLength = 8;
         const hasUpperCase = /[A-Z]/.test(pw);
         const hasNumber = /[0-9]/.test(pw);
-        
+
         if (pw.length < minLength) return "Password must be at least 8 characters long.";
         if (!hasUpperCase) return "Password must contain at least one uppercase letter.";
         if (!hasNumber) return "Password must contain at least one number.";
@@ -62,8 +64,8 @@ const SubmissionGatewayPage = () => {
         setIsLoading(true);
         try {
             const response = await axios.post(`${API_BASE_URL}/external-authors/register-and-login`, {
-                full_name: fullName, 
-                email, 
+                full_name: fullName,
+                email,
                 password,
             });
 
@@ -71,8 +73,8 @@ const SubmissionGatewayPage = () => {
 
             setTimeout(() => {
                 handleLogin(
-                    response.data.authToken, 
-                    response.data.data.role, 
+                    response.data.authToken,
+                    response.data.data.role,
                     response.data.data.full_name
                 );
                 navigate('/jempa-portal');
@@ -92,15 +94,15 @@ const SubmissionGatewayPage = () => {
             </div>
 
             <div className="mt-12 max-w-4xl mx-auto grid md:grid-cols-2 gap-8 px-4">
-                
+
                 <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-200 flex flex-col items-center text-center h-full">
                     <div className="bg-blue-100 p-4 rounded-full">
                         <LogIn className="h-8 w-8 text-blue-600" />
                     </div>
                     <h2 className="text-2xl font-bold text-blue-900 mt-4">JEMPA Portal Login</h2>
                     <p className="mt-2 text-gray-600 flex-grow">
-                        For **EMPA Members**, registered authors, and reviewers. Log in to track your 
-                        submitted manuscripts, access the peer-review system, or start a new submission 
+                        For <strong>EMPA Member</strong>, registered authors, and reviewers. Log in to track your
+                        submitted manuscripts, access the peer-review system, or start a new submission
                         using your existing credentials.
                     </p>
                     <PrimaryButton
@@ -123,14 +125,14 @@ const SubmissionGatewayPage = () => {
                     </div>
                     <h2 className="text-2xl font-bold text-green-800 mt-4">New to JEMPA?</h2>
                     <p className="mt-2 text-gray-600 mb-4 flex-grow">
-                        If you are **not a member** of EMPA and have never submitted to JEMPA before, 
-                        please create a dedicated author account. This will allow you to submit your 
+                        If you are <strong>not a member</strong> of EMPA and have never submitted to JEMPA before,
+                        please create a dedicated author account. This will allow you to submit your
                         research and follow the review process.
                     </p>
 
                     <AnimatePresence mode="wait">
                         {isSuccess ? (
-                            <motion.div 
+                            <motion.div
                                 key="success"
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 animate={{ opacity: 1, scale: 1 }}
@@ -141,15 +143,15 @@ const SubmissionGatewayPage = () => {
                                 <p className="text-sm text-green-700">Connecting you to the portal...</p>
                             </motion.div>
                         ) : !showRegisterForm ? (
-                            <motion.div 
+                            <motion.div
                                 key="initial-button"
-                                initial={{ opacity: 0 }} 
-                                animate={{ opacity: 1 }} 
-                                exit={{ opacity: 0 }} 
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
                                 className="w-full"
                             >
-                                <PrimaryButton 
-                                    onClick={() => setShowRegisterForm(true)} 
+                                <PrimaryButton
+                                    onClick={() => setShowRegisterForm(true)}
                                     className="mt-6 w-full bg-green-600 hover:bg-green-700"
                                 >
                                     Register as an Author
@@ -178,7 +180,7 @@ const SubmissionGatewayPage = () => {
                                     <label className="text-[10px] font-bold uppercase text-gray-400">Email</label>
                                     <input type="email" value={email} onChange={e => setEmail(e.target.value)} required className="w-full p-2 border rounded-md mt-1 outline-none focus:border-green-500" />
                                 </div>
-                                <div className="grid grid-cols-2 gap-2">
+                                {/* <div className="grid grid-cols-2 gap-2">
                                     <div>
                                         <label className="text-[10px] font-bold uppercase text-gray-400">Password</label>
                                         <input type="password" value={password} onChange={e => setPassword(e.target.value)} required className="w-full p-2 border rounded-md mt-1 outline-none focus:border-green-500" />
@@ -186,6 +188,53 @@ const SubmissionGatewayPage = () => {
                                     <div>
                                         <label className="text-[10px] font-bold uppercase text-gray-400">Confirm</label>
                                         <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required className="w-full p-2 border rounded-md mt-1 outline-none focus:border-green-500" />
+                                    </div>
+                                </div> */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    {/* Password Field */}
+                                    <div>
+                                        <label className="text-[10px] font-bold uppercase text-slate-500">Password</label>
+                                        <div className="relative mt-1">
+                                            <input
+                                                type={showPassword ? "text" : "password"}
+                                                value={password}
+                                                onChange={e => setPassword(e.target.value)}
+                                                required
+                                                placeholder="Enter password"
+                                                className="w-full pr-10 pl-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-green-600 focus:ring-1 focus:ring-green-600"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                                tabIndex={-1}
+                                            >
+                                                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Confirm Password Field */}
+                                    <div>
+                                        <label className="text-[10px] font-bold uppercase text-slate-500">Confirm Password</label>
+                                        <div className="relative mt-1">
+                                            <input
+                                                type={showConfirmPassword ? "text" : "password"}
+                                                value={confirmPassword}
+                                                onChange={e => setConfirmPassword(e.target.value)}
+                                                required
+                                                placeholder="Confirm password"
+                                                className="w-full pr-10 pl-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-green-600 focus:ring-1 focus:ring-green-600"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                                tabIndex={-1}
+                                            >
+                                                {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                                 <p className="text-[9px] text-gray-400 leading-tight">

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext, useCallback, useMemo } from 're
 import axios from 'axios';
 import { AuthContext } from '../../../context/AuthContext';
 import { API_BASE_URL, STATIC_ASSETS_BASE_URL } from '../../../utils/constants';
-import { ARTICLE_TYPES, SPECIALIZATIONS, MANUSCRIPT_STATUS } from '../../../utils/workflowConstants';
+import { ARTICLE_TYPES, SPECIALIZATIONS } from '../../../utils/workflowConstants';
 
 // Components
 import WorkflowStepper from './common/WorkflowStepper';
@@ -10,20 +10,18 @@ import PrimaryButton from '../../common/PrimaryButton';
 import LatexEditor from '../../common/LatexEditor';
 import LatexRenderer from '../../common/LatexRenderer';
 import PublicationDetails from './PublicationDetails';
-
-// FIX #1: Corrected the import path to point to the Author's Revision Modal
 import SubmitRevisionModal from './Author/SubmitReviewModal';
 
 import {
-    FilePlus2, AlertTriangle, Upload, ClipboardCheck,
-    History, Loader2, CheckCircle2, FileText, X, MessageSquare,
-    ExternalLink, Bell, Download, CheckCircle, RefreshCw, Edit3
+    FilePlus2, Upload, ClipboardCheck,
+    Loader2, FileText, X, MessageSquare,
+    Download, CheckCircle, RefreshCw, Edit3, CheckCircle2
 } from 'lucide-react';
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15MB
 
 const AuthorDashboard = () => {
-    const { authToken, isSubmissionOpen, userName } = useContext(AuthContext);
+    const { authToken, userName } = useContext(AuthContext);
 
     // --- State Management ---
     const [submissions, setSubmissions] = useState([]);
@@ -32,19 +30,35 @@ const AuthorDashboard = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [revisionTarget, setRevisionTarget] = useState(null);
 
-    // Form State
+    // Form State (Defaults to empty strings for mandatory selection)
     const [formData, setFormData] = useState({
-        title: '', abstract: '', keywords: '',
-        articleType: ARTICLE_TYPES[0], specialization: SPECIALIZATIONS[0], file: null
+        title: '',
+        abstract: '',
+        keywords: '',
+        articleType: '',
+        specialization: '',
+        file: null
     });
 
+    // Ethical Declarations
     const [declarations, setDeclarations] = useState({
-        isOriginal: false, notSubmittedElsewhere: false, allAuthorsAgreed: false, noConflictInterest: false
+        isOriginal: false,
+        notSubmittedElsewhere: false,
+        allAuthorsAgreed: false,
+        noConflictInterest: false
     });
+
+    // Check if all ethical requirements are met
+    const allDeclarationsChecked = useMemo(() => {
+        return Object.values(declarations).every(val => val === true);
+    }, [declarations]);
 
     // --- Helper: Status Normalizer ---
-    const normalize = (status) => String(status || '').toUpperCase().replace(/[\s_]+/g, '');
+    const normalize = useCallback((status) => {
+        return String(status || '').toUpperCase().replace(/[\s_]+/g, '');
+    }, []);
 
+    // --- Fetch Author's Submissions ---
     const fetchSubmissions = useCallback(async () => {
         if (!authToken) return;
         setIsLoading(true);
@@ -60,34 +74,58 @@ const AuthorDashboard = () => {
         }
     }, [authToken]);
 
-    useEffect(() => { fetchSubmissions(); }, [fetchSubmissions]);
+    useEffect(() => {
+        fetchSubmissions();
+    }, [fetchSubmissions]);
 
+    // --- Handle File Upload ---
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0];
         if (selectedFile && selectedFile.type === 'application/pdf' && selectedFile.size <= MAX_FILE_SIZE) {
             setFormData(prev => ({ ...prev, file: selectedFile }));
         } else {
-            alert("Please upload a valid PDF under 10MB.");
-            e.target.value = null; // Clears the bad file from the input
+            alert("Please upload a valid compiled PDF under 15MB.");
+            e.target.value = null;
         }
     };
 
+    // --- Friendly Status Label ---
     const getFriendlyStatus = (status) => {
         const s = String(status || '').toUpperCase().replace(/[\s_]+/g, '');
         const mapping = {
             'SUBMITTED': 'Manuscript Submitted',
-            'WITHASSOCIATEEDITOR': 'Revision Under Evaluation',
+            'WITHASSOCIATEEDITOR': 'Under Evaluation',
             'UNDERREVIEW': 'Under Peer Review',
+            'REVIEWCOMPLETED': 'Review Completed',
             'REVISIONREQUIRED': 'Revisions Required',
+            'REVISIONSREQUIRED': 'Revisions Required',
+            'REVISIONSUBMITTED': 'Revision Submitted',
             'DECISIONPENDING': 'Editorial Decision Pending',
             'PROOFREADING': 'Galley Proof Review',
-            'PUBLISHED': 'Published'
+            'READYTOPUBLISH': 'Ready for Publication',
+            'PUBLISHED': 'Published',
+            'REJECTED': 'Declined'
         };
         return mapping[s] || status;
     };
 
+    // --- Handle Submission ---
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (!formData.articleType) {
+            alert("Please select an Article Type.");
+            return;
+        }
+        if (!formData.specialization) {
+            alert("Please select a Specialization.");
+            return;
+        }
+        if (!allDeclarationsChecked) {
+            alert("You must confirm all mandatory ethical statements before submitting.");
+            return;
+        }
+
         setIsSubmitting(true);
         const fd = new FormData();
         fd.append('title', formData.title);
@@ -100,14 +138,18 @@ const AuthorDashboard = () => {
 
         try {
             await axios.post(`${API_BASE_URL}/journal-papers`, fd, {
-                headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'multipart/form-data' }
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'multipart/form-data'
+                }
             });
             setFormVisible(false);
-            setFormData({ title: '', abstract: '', keywords: '', articleType: ARTICLE_TYPES[0], specialization: SPECIALIZATIONS[0], file: null });
+            setFormData({ title: '', abstract: '', keywords: '', articleType: '', specialization: '', file: null });
+            setDeclarations({ isOriginal: false, notSubmittedElsewhere: false, allAuthorsAgreed: false, noConflictInterest: false });
             fetchSubmissions();
-            alert("Manuscript successfully submitted.");
+            alert("Manuscript successfully submitted for editorial review.");
         } catch (err) {
-            alert(err.response?.data?.message || "Submission failed.");
+            alert(err.response?.data?.message || "Submission failed. Please check your data.");
         } finally {
             setIsSubmitting(false);
         }
@@ -120,100 +162,256 @@ const AuthorDashboard = () => {
             <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b pb-8">
                 <div className="space-y-1">
                     <h2 className="text-4xl font-black text-slate-900 tracking-tight leading-none uppercase">Author Portal</h2>
-                    <p className="text-slate-500 text-lg">Welcome, {userName}. Monitor your research lifecycle.</p>
+                    <p className="text-slate-500 text-lg">Welcome, {userName}. Monitor your research submissions and editorial progress.</p>
                 </div>
 
                 <div className="flex items-center gap-4">
-                        <PrimaryButton onClick={() => setFormVisible(true)} className="flex items-center gap-2 px-8 py-3.5 rounded-2xl shadow-lg">
-                            <FilePlus2 size={20} /> <span className="font-bold uppercase tracking-wider text-xs">New Submission</span>
-                        </PrimaryButton>
+                    <PrimaryButton onClick={() => setFormVisible(true)} className="flex items-center gap-2 px-8 py-3.5 rounded-2xl shadow-lg">
+                        <FilePlus2 size={20} />
+                        <span className="font-bold uppercase tracking-wider text-xs">New Submission</span>
+                    </PrimaryButton>
                 </div>
             </header>
 
             {/* Submission Form Section */}
             {isFormVisible && (
-                <main className="bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-in slide-in-from-top-8 duration-500 mb-12">
-                    <div className="bg-slate-900 p-4 text-white flex items-center gap-3">
-                        <ClipboardCheck size={20} className="text-blue-400" />
-                        <span className="font-bold text-xs uppercase tracking-widest">Metadata Entry</span>
-                        <button onClick={() => setFormVisible(false)} className="ml-auto hover:text-red-400"><X size={20} /></button>
+                <main className="bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-in slide-in-from-top-6 duration-300 mb-12">
+                    <div className="bg-slate-900 p-5 text-white flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <ClipboardCheck size={20} className="text-blue-400" />
+                            <div>
+                                <h3 className="font-bold text-sm uppercase tracking-wider">New Manuscript Submission</h3>
+                                <p className="text-[11px] text-slate-400">Please provide complete metadata adhering to JEMPA author guidelines.</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => setFormVisible(false)}
+                            className="text-slate-400 hover:text-white p-1 rounded-lg transition-colors"
+                        >
+                            <X size={20} />
+                        </button>
                     </div>
+
                     <form onSubmit={handleSubmit} className="p-8 space-y-8">
-                        <div className="grid md:grid-cols-2 gap-8">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase text-slate-400">Article Type</label>
-                                <select className="w-full border-2 border-slate-50 p-3.5 rounded-2xl bg-slate-50/50 outline-none focus:border-blue-400" value={formData.articleType} onChange={e => setFormData({ ...formData, articleType: e.target.value })}>
-                                    {ARTICLE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                        {/* Classification Dropdowns */}
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                                    Article Type <span className="text-rose-500">*</span>
+                                </label>
+                                <select
+                                    required
+                                    className="w-full border border-slate-200 p-3.5 rounded-xl bg-slate-50 font-medium text-sm text-slate-800 outline-none focus:border-blue-600 focus:bg-white transition-all"
+                                    value={formData.articleType}
+                                    onChange={e => setFormData({ ...formData, articleType: e.target.value })}
+                                >
+                                    <option value="" disabled>-- Select Article Type --</option>
+                                    {ARTICLE_TYPES.map(t => (
+                                        <option key={t} value={t}>{t}</option>
+                                    ))}
                                 </select>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase text-slate-400">Specialization</label>
-                                <select className="w-full border-2 border-slate-50 p-3.5 rounded-2xl bg-slate-50/50 outline-none focus:border-blue-400" value={formData.specialization} onChange={e => setFormData({ ...formData, specialization: e.target.value })}>
-                                    {SPECIALIZATIONS.map(s => <option key={s} value={s}>{s}</option>)}
+
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                                    Mathematical Specialization <span className="text-rose-500">*</span>
+                                </label>
+                                <select
+                                    required
+                                    className="w-full border border-slate-200 p-3.5 rounded-xl bg-slate-50 font-medium text-sm text-slate-800 outline-none focus:border-blue-600 focus:bg-white transition-all"
+                                    value={formData.specialization}
+                                    onChange={e => setFormData({ ...formData, specialization: e.target.value })}
+                                >
+                                    <option value="" disabled>-- Select Specialization --</option>
+                                    {SPECIALIZATIONS.map(s => (
+                                        <option key={s} value={s}>{s}</option>
+                                    ))}
                                 </select>
                             </div>
                         </div>
+
+                        {/* Title Input */}
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase text-slate-400">Manuscript Title</label>
+                            <label className="text-xs font-bold uppercase tracking-wider text-slate-600 flex justify-between">
+                                <span>Manuscript Title <span className="text-rose-500">*</span></span>
+                                <span className="text-[11px] text-slate-400 font-normal lowercase">
+                                    {"(LaTeX formulas supported, e.g. $\\beta$, $\\mathbb{R}^n$)"}
+                                </span>
+                            </label>
                             <LatexEditor
                                 value={formData.title}
                                 onChange={(val) => setFormData({ ...formData, title: val })}
-                                placeholder="e.g. Analysis of $\beta$-particles in $\mathbb{R}^n$..."
+                                placeholder="Enter full academic manuscript title..."
                             />
-                            {/* LIVE PREVIEW FOR TITLE */}
                             {formData.title && (
-                                <div className="p-4 bg-slate-50 border border-dashed border-slate-200 rounded-2xl">
-                                    <p className="text-[9px] font-black text-blue-500 uppercase mb-2 tracking-widest">Title Preview</p>
-                                    <div className="text-xl font-bold text-slate-800">
+                                <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                                    <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-1">Title Preview</p>
+                                    <div className="text-lg font-bold text-slate-800">
                                         <LatexRenderer content={formData.title} />
                                     </div>
                                 </div>
                             )}
                         </div>
-                        {/* Abstract Section */}
+
+                        {/* Abstract Input */}
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase text-slate-400">Abstract</label>
+                            <label className="text-xs font-bold uppercase tracking-wider text-slate-600 flex justify-between">
+                                <span>Abstract <span className="text-rose-500">*</span></span>
+                                <span className="text-[11px] text-slate-400 font-normal lowercase">(background, theorems, and main results)</span>
+                            </label>
                             <LatexEditor
                                 value={formData.abstract}
                                 onChange={(val) => setFormData({ ...formData, abstract: val })}
-                                placeholder="Enter abstract with LaTeX..."
+                                placeholder="Enter abstract with LaTeX mathematical formatting..."
                             />
-                            {/* LIVE PREVIEW FOR ABSTRACT */}
                             {formData.abstract && (
-                                <div className="p-4 bg-slate-50 border border-dashed border-slate-200 rounded-2xl">
-                                    <p className="text-[9px] font-black text-blue-500 uppercase mb-2 tracking-widest">Abstract Preview</p>
-                                    <div className="text-sm text-slate-600 leading-relaxed">
+                                <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                                    <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-1">Abstract Preview</p>
+                                    <div className="text-sm text-slate-700 leading-relaxed font-serif">
                                         <LatexRenderer content={formData.abstract} />
                                     </div>
                                 </div>
                             )}
                         </div>
-                        {/* <div className="space-y-6">
-                            <LatexEditor value={formData.title} onChange={(val) => setFormData({ ...formData, title: val })} placeholder="Manuscript Title..." />
-                            <LatexEditor value={formData.abstract} onChange={(val) => setFormData({ ...formData, abstract: val })} placeholder="Abstract..." />
-                        </div> */}
-                        <div className="grid md:grid-cols-3 gap-8">
-                            <div className="md:col-span-2 bg-slate-900 border-2 border-dashed border-slate-700 rounded-3xl p-10 relative text-center">
-                                <input type="file" accept=".pdf" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+
+                        {/* Keywords Input */}
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                                Keywords <span className="text-rose-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                required
+                                placeholder="e.g. Topology, Functional Analysis, Operator Theory (separated by commas)"
+                                value={formData.keywords}
+                                onChange={e => setFormData({ ...formData, keywords: e.target.value })}
+                                className="w-full border border-slate-200 p-3.5 rounded-xl bg-slate-50 text-sm outline-none focus:border-blue-600 focus:bg-white transition-all font-medium"
+                            />
+                        </div>
+
+                        {/* File Upload and Mandatory Declarations */}
+                        <div className="grid md:grid-cols-5 gap-6 items-start">
+                            {/* Upload Box */}
+                            <div className="md:col-span-2 bg-slate-900 border-2 border-dashed border-slate-700 rounded-2xl p-8 relative text-center hover:border-blue-500 transition-colors">
+                                <input
+                                    type="file"
+                                    accept=".pdf"
+                                    required
+                                    onChange={handleFileChange}
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                />
                                 {formData.file ? (
-                                    <div className="text-blue-400 flex flex-col items-center gap-2"><FileText size={48} /><span className="font-bold">{formData.file.name}</span></div>
+                                    <div className="text-blue-400 flex flex-col items-center gap-2">
+                                        <FileText size={40} />
+                                        <span className="font-bold text-xs text-white max-w-[200px] truncate">{formData.file.name}</span>
+                                        <span className="text-[10px] text-emerald-400 font-bold uppercase">PDF Attached</span>
+                                    </div>
                                 ) : (
-                                    <div className="text-slate-500 flex flex-col items-center gap-2"><Upload size={48} /><span className="font-bold tracking-tight uppercase text-xs">Select Manuscript PDF</span></div>
+                                    <div className="text-slate-400 flex flex-col items-center gap-2">
+                                        <Upload size={36} className="text-blue-400" />
+                                        <span className="font-bold text-xs uppercase tracking-wider text-white">Upload Manuscript PDF</span>
+                                        <span className="text-[10px] text-slate-500">Compiled LaTeX document (max 15MB)</span>
+                                    </div>
                                 )}
                             </div>
-                            <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 space-y-4">
-                                <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Ethical Checks</h4>
-                                {Object.keys(declarations).map(key => (
-                                    <label key={key} className="flex gap-3 items-center cursor-pointer">
-                                        <input type="checkbox" className="h-4 w-4 rounded text-blue-600" checked={declarations[key]} onChange={e => setDeclarations({ ...declarations, [key]: e.target.checked })} />
-                                        <span className="text-[10px] font-bold text-slate-600 uppercase tracking-tighter">{key.replace(/([A-Z])/g, ' $1')}</span>
+
+                            {/* Mandatory Ethical Compliance Box */}
+                            <div className="md:col-span-3 bg-amber-50/60 p-5 rounded-2xl border border-amber-200 space-y-3">
+                                <div className="flex items-center justify-between border-b border-amber-200 pb-2">
+                                    <div className="flex items-center gap-2">
+                                        <CheckCircle2 size={16} className="text-amber-700" />
+                                        <h4 className="text-xs font-black text-amber-900 uppercase tracking-wider">
+                                            Mandatory Ethical Declarations
+                                        </h4>
+                                    </div>
+                                    <span className="text-[10px] font-bold uppercase bg-amber-200/80 text-amber-800 px-2 py-0.5 rounded">
+                                        All Required
+                                    </span>
+                                </div>
+
+                                <div className="space-y-2.5 pt-1">
+                                    <label className="flex items-start gap-2.5 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            required
+                                            className="mt-0.5 h-4 w-4 rounded border-amber-300 text-blue-600 focus:ring-blue-500"
+                                            checked={declarations.isOriginal}
+                                            onChange={e => setDeclarations({ ...declarations, isOriginal: e.target.checked })}
+                                        />
+                                        <span className="text-xs font-medium text-slate-800 leading-snug">
+                                            <strong>Originality:</strong> The manuscript represents original academic research and contains no plagiarized material.
+                                        </span>
                                     </label>
-                                ))}
+
+                                    <label className="flex items-start gap-2.5 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            required
+                                            className="mt-0.5 h-4 w-4 rounded border-amber-300 text-blue-600 focus:ring-blue-500"
+                                            checked={declarations.notSubmittedElsewhere}
+                                            onChange={e => setDeclarations({ ...declarations, notSubmittedElsewhere: e.target.checked })}
+                                        />
+                                        <span className="text-xs font-medium text-slate-800 leading-snug">
+                                            <strong>Exclusive Submission:</strong> This work is not currently under consideration or published in another journal.
+                                        </span>
+                                    </label>
+
+                                    <label className="flex items-start gap-2.5 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            required
+                                            className="mt-0.5 h-4 w-4 rounded border-amber-300 text-blue-600 focus:ring-blue-500"
+                                            checked={declarations.allAuthorsAgreed}
+                                            onChange={e => setDeclarations({ ...declarations, allAuthorsAgreed: e.target.checked })}
+                                        />
+                                        <span className="text-xs font-medium text-slate-800 leading-snug">
+                                            <strong>Author Consent:</strong> All co-authors have reviewed and approved the submitted version of the paper.
+                                        </span>
+                                    </label>
+
+                                    <label className="flex items-start gap-2.5 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            required
+                                            className="mt-0.5 h-4 w-4 rounded border-amber-300 text-blue-600 focus:ring-blue-500"
+                                            checked={declarations.noConflictInterest}
+                                            onChange={e => setDeclarations({ ...declarations, noConflictInterest: e.target.checked })}
+                                        />
+                                        <span className="text-xs font-medium text-slate-800 leading-snug">
+                                            <strong>Conflict of Interest:</strong> All financial and personal competing interests have been fully declared.
+                                        </span>
+                                    </label>
+                                </div>
                             </div>
                         </div>
-                        <PrimaryButton type="submit" disabled={!formData.file || isSubmitting} className="w-full py-5 rounded-2xl shadow-xl shadow-blue-100 text-lg uppercase tracking-widest font-black">
-                            {isSubmitting ? <Loader2 className="animate-spin mx-auto" /> : "Transmit to Journal"}
+
+                        {/* Submit Button */}
+                        <PrimaryButton
+                            type="submit"
+                            disabled={
+                                !formData.file ||
+                                !formData.articleType ||
+                                !formData.specialization ||
+                                !allDeclarationsChecked ||
+                                isSubmitting
+                            }
+                            className="w-full py-4 rounded-xl shadow-lg shadow-blue-200 text-sm uppercase tracking-widest font-black disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+                        >
+                            {isSubmitting ? (
+                                <>
+                                    <Loader2 className="animate-spin" size={18} />
+                                    <span>Submitting to Editorial Board...</span>
+                                </>
+                            ) : (
+                                <span>Submit Manuscript</span>
+                            )}
                         </PrimaryButton>
+
+                        {!allDeclarationsChecked && (
+                            <p className="text-[11px] text-center text-amber-700 italic font-medium -mt-4">
+                                * Please confirm all mandatory ethical statements and select both Article Type and Specialization to submit.
+                            </p>
+                        )}
                     </form>
                 </main>
             )}
@@ -247,7 +445,9 @@ const AuthorDashboard = () => {
                                     <div className="flex flex-col lg:flex-row justify-between items-start gap-12">
                                         <div className="flex-1 space-y-6">
                                             <div className="flex flex-wrap items-center gap-4">
-                                                <span className="bg-slate-900 text-white text-[10px] px-3 py-1.5 rounded-lg font-black tracking-widest uppercase shadow-sm">ID: #{p.id}</span>
+                                                <span className="bg-slate-900 text-white text-[10px] px-3 py-1.5 rounded-lg font-black tracking-widest uppercase shadow-sm">
+                                                    ID: #{p.id}
+                                                </span>
                                                 <span className="bg-blue-50 text-blue-700 text-[10px] px-3 py-1.5 rounded-lg font-black uppercase tracking-widest border border-blue-100">
                                                     {getFriendlyStatus(p.status)}
                                                 </span>
@@ -261,14 +461,14 @@ const AuthorDashboard = () => {
                                             <div className="flex flex-wrap gap-3 pt-4">
                                                 {p.production_file_url || p.manuscript_file_url ? (
                                                     <a
-                                                        // FIX #2: Implemented the safe URL regex generator to prevent app crashes and double-folder bugs
                                                         href={`${STATIC_ASSETS_BASE_URL}/uploads/${(p.production_file_url || p.manuscript_file_url || '').replace(/^(\/?uploads\/)/, "")}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className={`flex items-center justify-center gap-2 px-6 py-3 border-2 font-black text-xs rounded-xl uppercase tracking-widest transition-all ${p.production_file_url
-                                                            ? "border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100"
-                                                            : "border-slate-100 text-slate-600 hover:bg-slate-50"
-                                                            }`}
+                                                        className={`flex items-center justify-center gap-2 px-6 py-3 border-2 font-black text-xs rounded-xl uppercase tracking-widest transition-all ${
+                                                            p.production_file_url
+                                                                ? "border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100"
+                                                                : "border-slate-100 text-slate-600 hover:bg-slate-50"
+                                                        }`}
                                                     >
                                                         <Download size={16} />
                                                         {p.production_file_url ? "Download Galley Proof" : "Download Manuscript"}
@@ -281,7 +481,8 @@ const AuthorDashboard = () => {
 
                                                 {(normalize(p.status) === 'REVISIONREQUIRED' || normalize(p.status) === 'REVISIONSREQUIRED') && (
                                                     <button
-                                                        onClick={() => setRevisionTarget({ paper: p, type: 'revision' })} className="px-8 py-3 bg-blue-600 text-white font-black text-xs rounded-xl hover:bg-blue-700 shadow-lg uppercase tracking-widest flex items-center gap-2"
+                                                        onClick={() => setRevisionTarget({ paper: p, type: 'revision' })}
+                                                        className="px-8 py-3 bg-blue-600 text-white font-black text-xs rounded-xl hover:bg-blue-700 shadow-lg uppercase tracking-widest flex items-center gap-2"
                                                     >
                                                         <RefreshCw size={16} /> Submit Revision & Response
                                                     </button>
@@ -290,10 +491,11 @@ const AuthorDashboard = () => {
                                                 {(normalize(p.status) === 'PRODUCTIONSTARTED' || normalize(p.status) === 'INPRODUCTION') && (
                                                     <div className="mt-4 p-4 bg-emerald-50 border border-emerald-200 rounded-2xl w-full">
                                                         <p className="text-xs text-emerald-800 font-bold mb-3 uppercase tracking-tight">
-                                                            Production has started. Please upload your camera-ready files.
+                                                            Production has started. Please upload camera-ready final files.
                                                         </p>
                                                         <button
-                                                            onClick={() => setRevisionTarget({ paper: p, type: 'production' })} className="w-full py-3 bg-emerald-600 text-white font-black text-xs rounded-xl hover:bg-emerald-700 shadow-lg uppercase tracking-widest flex items-center justify-center gap-2"
+                                                            onClick={() => setRevisionTarget({ paper: p, type: 'production' })}
+                                                            className="w-full py-3 bg-emerald-600 text-white font-black text-xs rounded-xl hover:bg-emerald-700 shadow-lg uppercase tracking-widest flex items-center justify-center gap-2"
                                                         >
                                                             <Upload size={16} /> Upload Final Production Files
                                                         </button>
@@ -307,7 +509,7 @@ const AuthorDashboard = () => {
                                                                 <MessageSquare size={18} />
                                                             </div>
                                                             <h5 className="font-black text-orange-900 uppercase text-xs tracking-widest">
-                                                                Production Editor's Instructions
+                                                                Production Editor Instructions
                                                             </h5>
                                                         </div>
 
@@ -322,7 +524,8 @@ const AuthorDashboard = () => {
                                                         </div>
 
                                                         <button
-                                                            onClick={() => setRevisionTarget({ paper: p, type: 'production' })} className="w-full py-4 bg-orange-600 text-white font-black text-xs rounded-2xl uppercase tracking-widest shadow-lg hover:bg-orange-700 transition-all active:scale-95"
+                                                            onClick={() => setRevisionTarget({ paper: p, type: 'production' })}
+                                                            className="w-full py-4 bg-orange-600 text-white font-black text-xs rounded-2xl uppercase tracking-widest shadow-lg hover:bg-orange-700 transition-all active:scale-95"
                                                         >
                                                             Upload Final Corrected PDF
                                                         </button>
@@ -330,42 +533,119 @@ const AuthorDashboard = () => {
                                                 )}
                                             </div>
 
-                                            {/* Feedback Integration */}
-                                            {(normalize(p.status).includes('REJECT') || normalize(p.status).includes('REVISION')) && (
-                                                <div className="mt-8 p-8 bg-slate-50 border border-slate-200 rounded-[2rem] space-y-8 shadow-inner">
-                                                    <div className="flex items-center gap-3 text-blue-900 font-black uppercase tracking-widest text-xs"><ClipboardCheck size={20} /> Evaluation Report</div>
-                                                    <div className="space-y-4">
-                                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] block">Managing Editor Note</span>
-                                                        <div className="p-6 bg-white rounded-2xl border border-slate-100 text-slate-800 leading-relaxed shadow-sm italic"><LatexRenderer content={p.editor_decision_notes || "Decision pending summary."} /></div>
+                                            {/* ========================================================================= */}
+                                            {/* --- ANONYMOUS EDITORIAL & REVIEWER EVALUATION REPORT ---                  */}
+                                            {/* REMOVED AFTER PUBLICATION: Only displays while active or in revision      */}
+                                            {/* ========================================================================= */}
+                                            {normalize(p.status) !== 'PUBLISHED' && 
+                                             (normalize(p.status).includes('REJECT') || 
+                                              normalize(p.status).includes('REVISION') || 
+                                              normalize(p.status) === 'REVISIONSUBMITTED' || 
+                                              p.editor_decision_notes || 
+                                              p.ae_comments_for_author || 
+                                              (p.reviews && p.reviews.length > 0)) && (
+                                                <div className="mt-8 p-6 md:p-8 bg-slate-50 border border-slate-200 rounded-3xl space-y-6 shadow-inner">
+                                                    <div className="flex items-center gap-2 text-indigo-900 font-black uppercase tracking-wider text-xs border-b border-slate-200 pb-3">
+                                                        <ClipboardCheck size={18} className="text-indigo-600" />
+                                                        <span>Official Peer Review & Editorial Evaluation Report</span>
                                                     </div>
-                                                    {p.reviews && p.reviews.length > 0 && (
-                                                        <div className="grid gap-4">
-                                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] block">Technical Peer Feedback</span>
-                                                            {p.reviews.map((rev, idx) => (
-                                                                <div key={idx} className="p-6 bg-blue-50/50 rounded-2xl border border-blue-100/50">
-                                                                    <div className="flex items-center gap-2 mb-3"><MessageSquare size={14} className="text-blue-400" /><span className="text-[10px] font-black text-blue-600 uppercase">Reviewer {idx + 1}</span></div>
-                                                                    <div className="text-sm text-slate-700 leading-relaxed"><LatexRenderer content={rev.comments_for_author} /></div>
-                                                                </div>
-                                                            ))}
+
+                                                    {/* 1. Managing Editor / Editorial Committee Directive */}
+                                                    {p.editor_decision_notes && (
+                                                        <div className="space-y-2">
+                                                            <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest block">
+                                                                Managing Editor Decision & Instructions:
+                                                            </span>
+                                                            <div className="p-5 bg-white rounded-2xl border border-indigo-100 text-slate-800 leading-relaxed shadow-sm font-serif">
+                                                                <LatexRenderer content={p.editor_decision_notes} />
+                                                            </div>
                                                         </div>
+                                                    )}
+
+                                                    {/* 2. Handling Associate Editor Comments to Author */}
+                                                    {(p.ae_comments_for_author || p.ae_recommendation) && (
+                                                        <div className="space-y-2">
+                                                            <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest block">
+                                                                Handling Associate Editor Remarks:
+                                                            </span>
+                                                            <div className="p-5 bg-white rounded-2xl border border-blue-100 text-slate-800 leading-relaxed shadow-sm font-serif">
+                                                                {p.ae_recommendation && (
+                                                                    <p className="font-bold text-xs text-blue-900 mb-1.5">
+                                                                        Status Recommendation: {p.ae_recommendation}
+                                                                    </p>
+                                                                )}
+                                                                {p.ae_comments_for_author ? (
+                                                                    <LatexRenderer content={p.ae_comments_for_author} />
+                                                                ) : (
+                                                                    <p className="text-xs text-slate-500 italic">Editorial recommendation forwarded to Managing Editor.</p>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* 3. Anonymous Technical Reviewer Feedback */}
+                                                    {p.reviews && p.reviews.length > 0 ? (
+                                                        <div className="space-y-4">
+                                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">
+                                                                Blind Expert Reviewer Feedback:
+                                                            </span>
+                                                            <div className="grid gap-4">
+                                                                {p.reviews.map((rev, idx) => (
+                                                                    <div key={idx} className="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                                                                        <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                                                                            <div className="flex items-center gap-2">
+                                                                                <div className="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold">
+                                                                                    R{idx + 1}
+                                                                                </div>
+                                                                                <span className="text-xs font-bold text-slate-800">
+                                                                                    Anonymous Reviewer {idx + 1}
+                                                                                </span>
+                                                                            </div>
+                                                                            {rev.recommendation && (
+                                                                                <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full ${
+                                                                                    rev.recommendation.toLowerCase().includes('reject')
+                                                                                        ? 'bg-rose-100 text-rose-700'
+                                                                                        : rev.recommendation.toLowerCase().includes('revision')
+                                                                                            ? 'bg-amber-100 text-amber-700'
+                                                                                            : 'bg-emerald-100 text-emerald-700'
+                                                                                }`}>
+                                                                                    Recommendation: {rev.recommendation}
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+
+                                                                        <div className="text-sm text-slate-700 leading-relaxed font-serif pt-1">
+                                                                            <LatexRenderer content={rev.comments_for_author || "No specific author comments provided."} />
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <p className="text-xs text-slate-400 italic">Peer reviewer reports will be visible here once compiled.</p>
                                                     )}
                                                 </div>
                                             )}
                                         </div>
 
-                                        {/* Published Stats Side */}
+                                        {/* Published Badge Side */}
                                         {normalize(p.status) === 'PUBLISHED' && (
                                             <div className="lg:w-80 flex flex-col gap-4 shrink-0">
                                                 <div className="p-6 bg-emerald-50 rounded-3xl border border-emerald-100 text-center space-y-4">
                                                     <CheckCircle size={32} className="mx-auto text-emerald-600" />
                                                     <p className="text-[10px] font-black text-emerald-800 uppercase tracking-[0.2em]">Record Published</p>
-                                                    <a href={`/journals/articles/${p.id}`} className="block w-full py-3 bg-emerald-600 text-white font-black text-[10px] rounded-xl hover:bg-emerald-700 transition-all uppercase tracking-widest">Article Record Link</a>
+                                                    <a
+                                                        href={`/journals/articles/${p.id}`}
+                                                        className="block w-full py-3 bg-emerald-600 text-white font-black text-[10px] rounded-xl hover:bg-emerald-700 transition-all uppercase tracking-widest"
+                                                    >
+                                                        View Article Record
+                                                    </a>
                                                 </div>
                                             </div>
                                         )}
                                     </div>
 
-                                    {/* Timeline Tracker */}
+                                    {/* Workflow Timeline Stepper */}
                                     <div className="pt-12 border-t border-slate-100">
                                         <WorkflowStepper currentStatus={p.status} />
                                     </div>
@@ -381,12 +661,16 @@ const AuthorDashboard = () => {
                 )}
             </section>
 
+            {/* Revision Modal */}
             {revisionTarget && (
                 <SubmitRevisionModal
                     paper={revisionTarget.paper}
                     uploadType={revisionTarget.type}
                     onClose={() => setRevisionTarget(null)}
-                    onRevisionSubmitted={() => { setRevisionTarget(null); fetchSubmissions(); }}
+                    onRevisionSubmitted={() => {
+                        setRevisionTarget(null);
+                        fetchSubmissions();
+                    }}
                 />
             )}
         </div>

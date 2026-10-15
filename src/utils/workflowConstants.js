@@ -140,7 +140,9 @@ export const ARTICLE_TYPES = [
     'Short Communication',
     'Policy Brief',
     'Case Study',
-    'Conference Proceeding'
+    'Conference Proceeding',
+    'Erratum',
+    'Special Issue'
 ];
 
 /**
@@ -155,7 +157,8 @@ export const SPECIALIZATIONS = [
     'Mathematics Education',
     'Statistics and Probability',
     'Mathematical Physics',
-    'Interdisciplinary Areas'
+    'Interdisciplinary Areas',
+    'Others'
 ];
 
 /**
