@@ -6,6 +6,9 @@ import WorkflowStepper from './common/WorkflowStepper';
 import AssignReviewerModal from './Editor/AssignReviewerModal';
 import MakeDecisionModal from './Editor/MakeDecisionModal';
 import SendProofModal from './Editor/SendProofModal';
+import ContactAuthorModal from './Editor/ContactAuthorModal';
+import { Mail } from 'lucide-react'; 
+import EditorialContactModal from './Editor/EditorialContactModal';
 
 import { Link } from 'react-router-dom';
 
@@ -17,6 +20,7 @@ import {
 import LatexRenderer from '../../common/LatexRenderer';
 import LatexEditor from '../../common/LatexEditor';
 import AddArchivedEdition from './Editor/AddArchivedEdition';
+import { toast } from 'react-toastify';
 
 // --- DYNAMIC PRODUCTION CONFIGURATION ---
 const PRODUCTION_STEPS = {
@@ -35,6 +39,9 @@ const ManagingEditorDashboard = () => {
     const [activeTab, setActiveTab] = useState('triage');
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+
+
+    const [contactTarget, setContactTarget] = useState(null); 
 
     // Modal States
     const [modalState, setModalState] = useState({ type: null, paper: null });
@@ -90,7 +97,7 @@ const ManagingEditorDashboard = () => {
 
     const submitDeskReject = async () => {
         if (!rejectReason || rejectReason.length < 10) {
-            alert("Please provide a substantial reason for rejection (min 10 chars).");
+            toast.warn("Please provide a substantial reason for rejection (min 10 characters).");
             return;
         }
         setIsRejecting(true);
@@ -102,8 +109,9 @@ const ManagingEditorDashboard = () => {
             );
             setRejectModal({ isOpen: false, paper: null });
             fetchPapers();
+            toast.success("Manuscript desk rejected and author notified by email.");
         } catch (error) {
-            alert("Rejection failed.");
+            toast.error("Rejection failed. Please try again.");
         } finally {
             setIsRejecting(false);
         }
@@ -121,10 +129,10 @@ const ManagingEditorDashboard = () => {
                 {},
                 { headers: { 'Authorization': `Bearer ${authToken}` } }
             );
-            alert('Assignment revoked. Manuscript returned to Triage.');
+            toast.info('Assignment revoked. Manuscript returned to Triage.');
             fetchPapers();
         } catch (err) {
-            alert(err.response?.data?.message || 'Failed to revoke Associate Editor.');
+            toast.error(err.response?.data?.message || 'Failed to revoke Associate Editor.');
         }
     };
 
@@ -300,12 +308,34 @@ const ManagingEditorDashboard = () => {
                                         <h4 className="font-black text-2xl text-slate-800 leading-tight group-hover:text-blue-700 transition-colors break-words">
                                             <LatexRenderer content={p.title} />
                                         </h4>
-                                        <div className="text-sm font-bold text-slate-500">
+                                        {/* <div className="text-sm font-bold text-slate-500">
                                             Author: <span className="text-slate-900 font-black">{p.author_name || "N/A"}</span>
-                                        </div>
+                                        </div> */}
 
+                                        {/* Author row */}
+                                        <div className="text-sm font-medium text-slate-500 flex items-center gap-2.5 flex-wrap">
+                                            <span>Author: <strong className="text-slate-900 font-black">{p.author_name || "N/A"}</strong></span>
+                                            {p.author_email && (
+                                                <span className="text-xs text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md font-mono">
+                                                    {p.author_email}
+                                                </span>
+                                            )}
+                                            <button
+                                                type="button"
+                                                onClick={() => setContactTarget({
+                                                    type: 'author',
+                                                    paper: p,
+                                                    name: p.author_name,
+                                                    email: p.author_email,
+                                                    endpoint: `${API_BASE_URL}/journal-papers/${p.id}/contact-author`
+                                                })}
+                                                className="px-2.5 py-0.5 bg-white border border-blue-200 text-blue-600 hover:bg-blue-50 rounded-md text-xs font-bold transition-all inline-flex items-center gap-1"
+                                            >
+                                                <Mail size={11} /> Contact Author
+                                            </button>
+                                        </div>
                                         {/* --- CLEAN ASSIGNED ASSOCIATE EDITOR INFO BADGE --- */}
-                                        {p.associate_editor_id && (
+                                        {/* {p.associate_editor_id && (
                                             <div className="mt-3 p-3.5 bg-indigo-50/70 border border-indigo-100 rounded-2xl flex items-center gap-3.5">
                                                 <div className="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-black uppercase shadow-sm shrink-0">
                                                     {p.ae_name ? p.ae_name.charAt(0) : 'AE'}
@@ -323,6 +353,56 @@ const ManagingEditorDashboard = () => {
                                                             <span>• Assigned: {new Date(p.ae_assigned_at).toLocaleDateString()}</span>
                                                         )}
                                                     </div>
+                                                </div>
+                                            </div>
+                                        )} */}
+
+                                        {/* In ManagingEditorDashboard.js inside p.associate_editor_id card: */}
+                                        {p.associate_editor_id && (
+                                            <div className="mt-3 p-3.5 bg-indigo-50/70 border border-indigo-100 rounded-2xl flex items-center justify-between gap-3 flex-wrap">
+                                                <div className="flex items-center gap-3.5 min-w-0">
+                                                    <div className="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-black uppercase shadow-sm shrink-0">
+                                                        {p.ae_name ? p.ae_name.charAt(0) : 'AE'}
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest leading-none">
+                                                            Assigned Associate Editor
+                                                        </p>
+                                                        <p className="text-sm font-bold text-slate-800 mt-1 truncate">
+                                                            {p.ae_name || `ID #${p.associate_editor_id}`}
+                                                        </p>
+                                                        <div className="flex flex-wrap gap-2 text-[10px] text-slate-400 mt-0.5 font-medium">
+                                                            {p.ae_email && <span>{p.ae_email}</span>}
+                                                            {p.ae_assigned_at && (
+                                                                <span>• Assigned: {new Date(p.ae_assigned_at).toLocaleDateString()}</span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Action buttons for AE */}
+                                                <div className="flex items-center gap-2">
+                                                    {/* ✅ Contact AE Button */}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setContactTarget({
+                                                            type: 'associate',
+                                                            paper: p,
+                                                            name: p.ae_name,
+                                                            email: p.ae_email,
+                                                            endpoint: `${API_BASE_URL}/journal-papers/${p.id}/contact-associate`
+                                                        })}
+                                                        className="px-3 py-1 bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded-lg text-xs font-bold shadow-sm transition-all flex items-center gap-1.5"
+                                                    >
+                                                        <Mail size={12} /> Contact Associate Editor
+                                                    </button>
+                                                    {/* <button
+                                                        type="button"
+                                                        onClick={() => setModalState({ type: 'assign-associate', paper: p })}
+                                                        className="px-3 py-1 bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 rounded-lg text-xs font-bold transition-all"
+                                                    >
+                                                        Reassign
+                                                    </button> */}
                                                 </div>
                                             </div>
                                         )}
@@ -702,6 +782,23 @@ const ManagingEditorDashboard = () => {
                     )
                 }
             </div>
+            {/* {contactTarget && (
+                <ContactAuthorModal 
+                    paper={contactTarget}
+                    onClose={() => setContactTarget(null)}
+                />
+            )} */}
+            {/* Render Contact Modal */}
+            {contactTarget && (
+                <EditorialContactModal
+                    recipientType={contactTarget.type}
+                    recipientName={contactTarget.name}
+                    recipientEmail={contactTarget.email}
+                    paper={contactTarget.paper}
+                    endpoint={contactTarget.endpoint}
+                    onClose={() => setContactTarget(null)}
+                />
+            )}
         </div>
     );
 };

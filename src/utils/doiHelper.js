@@ -7,15 +7,15 @@ export const generateDoi = (paper) => {
 
     const volume = paper.volume_number || paper.volume_no;
     const issue = paper.issue_number || paper.issue_no;
-    const pageOrder = paper.page_order;
+    // const pageOrder = paper.page_order;
 
     // When Volume, Issue, and Page Order are all available
-    if (volume && issue && pageOrder) {
-        const v = String(volume).padStart(2, '0');
-        const i = String(issue).padStart(2, '0');
-        const p = String(pageOrder).padStart(2, '0');
-        return `10.66894/hissab.${v}${i}${p}`;
-    }
+    // if (volume && issue && pageOrder) {
+    //     const v = String(volume).padStart(2, '0');
+    //     const i = String(issue).padStart(2, '0');
+    //     const p = String(pageOrder).padStart(2, '0');
+    //     return `10.66894/hissab.${v}${i}${p}`;
+    // }
 
     // Fallback if page_order is not yet set (uses 2-digit paper ID)
     if (volume && issue) {

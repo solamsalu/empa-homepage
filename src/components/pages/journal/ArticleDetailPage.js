@@ -6,6 +6,7 @@ import { Download, Book, Eye, Quote, Share2, Calendar, FileText } from 'lucide-r
 import HtmlContentRenderer from '../../common/HtmlContentRenderer';
 import LatexRenderer from '../../common/LatexRenderer';
 import { generateDoi } from '../../../utils/doiHelper';
+import { toast } from 'react-toastify';
 
 const ArticleDetailPage = () => {
     const { paperId } = useParams();
@@ -33,7 +34,7 @@ const ArticleDetailPage = () => {
             window.open(fileUrl, '_blank');
         } catch (e) {
             console.error("Analytics Error (Download)");
-            alert("Could not process download. Please try again.");
+            toast.info("Could not process download. Please try again.");
         }
     };
 

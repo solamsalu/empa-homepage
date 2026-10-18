@@ -6,6 +6,7 @@ import { X, Send, ShieldCheck, MessageSquare, Lock, Eye, AlertCircle } from 'luc
 import PrimaryButton from '../../../common/PrimaryButton';
 import LatexEditor from '../../../common/LatexEditor';
 import LatexRenderer from '../../../common/LatexRenderer';
+import { toast } from 'react-toastify';
 
 const MakeDecisionModal = ({ paper, onClose, onDecisionMade }) => {
     const { authToken, userRole } = useContext(AuthContext);
@@ -49,7 +50,7 @@ const MakeDecisionModal = ({ paper, onClose, onDecisionMade }) => {
 
     const handleSubmit = async () => {
         if (!decision) {
-            alert(isRecommendation ? "Please select an editorial recommendation." : "Please select a final decision status.");
+            toast.warn(isRecommendation ? "Please select an editorial recommendation." : "Please select a final decision status.");
             return;
         }
 

@@ -3,6 +3,7 @@ import axios from 'axios';
 import { X, Upload, Send, FileText } from 'lucide-react';
 import { API_BASE_URL } from '../../../../utils/constants';
 import { AuthContext } from '../../../../context/AuthContext';
+import { toast } from 'react-toastify';
 
 const SendProofModal = ({ paper, onClose, onComplete }) => {
     const { authToken } = useContext(AuthContext);
@@ -12,7 +13,7 @@ const SendProofModal = ({ paper, onClose, onComplete }) => {
 
     const handleUpload = async (e) => {
         e.preventDefault();
-        if (!file) return alert("Please upload the formatted PDF.");
+        if (!file) return toast.warn("Please upload the formatted PDF.");
 
         setLoading(true);
         const fd = new FormData();
@@ -25,7 +26,7 @@ const SendProofModal = ({ paper, onClose, onComplete }) => {
             });
             onComplete();
         } catch (err) {
-            alert("Failed to send proof.");
+            toast.error("Failed to send proof.");
         } finally { setLoading(false); }
     };
 

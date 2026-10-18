@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { API_BASE_URL } from '../../../../utils/constants';
 import { X, UserPlus, Calendar, Info } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 const AssignReviewerModal = ({ paperId, authToken, onClose, onAssignmentComplete }) => {
    const [reviewers, setReviewers] = useState([]);
@@ -38,11 +39,11 @@ const AssignReviewerModal = ({ paperId, authToken, onClose, onAssignmentComplete
             headers: { Authorization: `Bearer ${authToken}` }
          });
 
-         alert("Reviewer successfully assigned!");
+         toast.success("Reviewer successfully assigned!");
          onAssignmentComplete();
          onClose();
       } catch (err) {
-         alert(err.response?.data?.message || "Assignment failed");
+         toast.error(err.response?.data?.message || "Assignment failed");
       } finally {
          setLoading(false);
       }

@@ -7,7 +7,8 @@ import { API_BASE_URL, STATIC_ASSETS_BASE_URL } from '../../utils/constants';
 import { Download, Trash2, PlusCircle, ChevronDown, Search, Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ConfirmModal from '../common/ConfirmModal';
-import AddResource from './AddResource'; // Assuming AddResource form logic is separated
+import AddResource from './AddResource'; 
+import { toast } from 'react-toastify';
 
 // --- Reusable Sub-component for a single Resource Card ---
 const ResourceCard = ({ resource, onDownload, onDelete, isAdmin }) => {
@@ -139,7 +140,7 @@ const ResourcesPage = () => {
     const handleDownload = (resource) => {
         const isMemberOrAdmin = userRole === 'admin' || userRole === 'member';
         if (resource.access_level === 'Members Only' && !isMemberOrAdmin) {
-            alert('This resource is for members only. Please log in to download.');
+            toast.success('This resource is for members only. Please log in to download.');
             return;
         }
         window.open(`${STATIC_ASSETS_BASE_URL}${resource.file_url}`, '_blank');

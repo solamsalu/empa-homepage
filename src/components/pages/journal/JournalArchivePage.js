@@ -4,6 +4,7 @@ import ArchiveSection from './ArchiveSection';
 import ConfirmModal from '../../common/ConfirmModal';
 import EditEditionModal from './EditEditionModal';
 import { useAuth } from '../../../hooks/useAuth'; // Replace with your auth logic
+import { toast } from 'react-toastify';
 
 const JournalArchivePage = () => {
     const { user } = useAuth();
@@ -47,7 +48,7 @@ const JournalArchivePage = () => {
             setEditions(prev => prev.filter(e => e.id !== selectedEdition.id));
             setShowDeleteModal(false);
         } catch (err) {
-            alert("Delete failed.");
+            toast.error("Delete failed.");
         } finally {
             setIsProcessing(false);
         }
@@ -66,7 +67,7 @@ const JournalArchivePage = () => {
             setEditions(prev => prev.map(e => e.id === selectedEdition.id ? { ...e, ...updatedData } : e));
             setShowEditModal(false);
         } catch (err) {
-            alert("Update failed.");
+            toast.error("Update failed.");
         } finally {
             setIsProcessing(false);
         }

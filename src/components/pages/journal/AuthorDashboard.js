@@ -11,6 +11,7 @@ import LatexEditor from '../../common/LatexEditor';
 import LatexRenderer from '../../common/LatexRenderer';
 import PublicationDetails from './PublicationDetails';
 import SubmitRevisionModal from './Author/SubmitReviewModal';
+import { toast } from 'react-toastify';
 
 import {
     FilePlus2, Upload, ClipboardCheck,
@@ -83,8 +84,9 @@ const AuthorDashboard = () => {
         const selectedFile = e.target.files[0];
         if (selectedFile && selectedFile.type === 'application/pdf' && selectedFile.size <= MAX_FILE_SIZE) {
             setFormData(prev => ({ ...prev, file: selectedFile }));
+            toast.info(`Attached: ${selectedFile.name}`);
         } else {
-            alert("Please upload a valid compiled PDF under 15MB.");
+            toast.error("Please upload a valid compiled PDF under 15MB.");
             e.target.value = null;
         }
     };
@@ -114,20 +116,26 @@ const AuthorDashboard = () => {
         e.preventDefault();
 
         if (!formData.articleType) {
-            alert("Please select an Article Type.");
+            toast.warn("Please select an Article Type.");
             return;
         }
         if (!formData.specialization) {
-            alert("Please select a Specialization.");
+            toast.warn("Please select a Specialization.");
             return;
         }
         if (!allDeclarationsChecked) {
-            alert("You must confirm all mandatory ethical statements before submitting.");
+            toast.warn("You must confirm all mandatory ethical statements before submitting.");
             return;
         }
 
         setIsSubmitting(true);
+        const cleanTitle = (formData.title || '')
+            .replace(/^<p>/i, '')
+            .replace(/<\/p>$/i, '')
+            .trim();
+
         const fd = new FormData();
+        fd.append('title', cleanTitle);
         fd.append('title', formData.title);
         fd.append('abstract', formData.abstract);
         fd.append('keywords', formData.keywords);
@@ -147,9 +155,9 @@ const AuthorDashboard = () => {
             setFormData({ title: '', abstract: '', keywords: '', articleType: '', specialization: '', file: null });
             setDeclarations({ isOriginal: false, notSubmittedElsewhere: false, allAuthorsAgreed: false, noConflictInterest: false });
             fetchSubmissions();
-            alert("Manuscript successfully submitted for editorial review.");
+            toast.success("Manuscript successfully submitted for editorial review.");
         } catch (err) {
-            alert(err.response?.data?.message || "Submission failed. Please check your data.");
+            toast.error(err.response?.data?.message || "Submission failed. Please check your data.");
         } finally {
             setIsSubmitting(false);
         }

@@ -5,6 +5,7 @@ import { format, isValid } from 'date-fns';
 import { AuthContext } from '../../../../context/AuthContext';
 import { API_BASE_URL, STATIC_ASSETS_BASE_URL } from '../../../../utils/constants';
 import { Edit, Trash2, Download, FileText, User, Calendar, MessageSquare, Check, X } from 'lucide-react';
+import { toast } from 'react-toastify';
 import PrimaryButton from '../../../common/PrimaryButton';
 
 // A sub-component for managing a single paper, making the list cleaner.
@@ -117,7 +118,7 @@ const PaperManagementPanel = ({ conference, onPaperUpdate }) => {
             // Optionally, show a success toast/message
             onPaperUpdate(); // Notify parent to potentially refresh counts
         } catch (err) {
-            alert(`Error updating status: ${err.response?.data?.message || err.message}`);
+            toast.info(`Error updating status: ${err.response?.data?.message || err.message}`);
             fetchPapers(); // Revert optimistic update on failure
         }
     };
@@ -129,7 +130,7 @@ const PaperManagementPanel = ({ conference, onPaperUpdate }) => {
                 setPapers(prev => prev.filter(p => p.id !== paperId));
                 onPaperUpdate();
             } catch (err) {
-                alert(`Error deleting paper: ${err.response?.data?.message || err.message}`);
+                toast.info(`Error deleting paper: ${err.response?.data?.message || err.message}`);
             }
         }
     };

@@ -408,6 +408,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import SubmitReviewModal from './Reviewer/SubmitReviewModal';
 import LatexRenderer from '../../common/LatexRenderer';
+import { toast } from 'react-toastify';
 
 // --- Reusable Card Component ---
 const ReviewAssignmentCard = ({ assignment, onStartReview, onStatusUpdate }) => {
@@ -429,7 +430,7 @@ const ReviewAssignmentCard = ({ assignment, onStartReview, onStatusUpdate }) => 
             );
             onStatusUpdate();
         } catch (err) {
-            alert(err.response?.data?.message || "Failed to update invitation status.");
+            toast.error(err.response?.data?.message || "Failed to update invitation status.");
         } finally {
             setIsUpdating(false);
         }
