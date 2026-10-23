@@ -213,10 +213,23 @@ const AdminDashboard = () => {
                         <Search className="absolute left-4 top-3 text-slate-400 w-4 h-4" />
                         <input type="text" placeholder="Search alphabetically..." className="w-full pl-12 pr-4 py-2.5 bg-slate-50 rounded-xl text-sm outline-none" onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }} />
                     </div>
-                    <select className="bg-slate-50 text-sm font-bold text-slate-600 rounded-xl px-4 py-2.5 outline-none" onChange={(e) => { setFilterRole(e.target.value); setPage(1); }}>
+                    {/* <select className="bg-slate-50 text-sm font-bold text-slate-600 rounded-xl px-4 py-2.5 outline-none" onChange={(e) => { setFilterRole(e.target.value); setPage(1); }}>
                         <option value="all">All System Roles</option>
                         {['admin', 'member', 'managing_editor', 'associate_editor', 'editor_in_chief', 'production_staff'].map(r => (
                             <option key={r} value={r}>{r.replace('_', ' ').toUpperCase()}</option>
+                        ))}
+                    </select> */}
+                    <select 
+                        className="bg-slate-50 text-sm font-bold text-slate-600 rounded-xl px-4 py-2.5 outline-none" 
+                        onChange={(e) => { setFilterRole(e.target.value); setPage(1); }}
+                    >
+                        <option value="all">All System Roles</option>
+                        {[
+                            'admin', 'member', 'author', 'reviewer', 
+                            'scientific_committee', 'conference_manager', 
+                            'managing_editor', 'associate_editor', 'editor_in_chief', 'production_staff'
+                        ].map(r => (
+                            <option key={r} value={r}>{r.replace(/_/g, ' ').toUpperCase()}</option>
                         ))}
                     </select>
                 </div>
@@ -244,7 +257,7 @@ const AdminDashboard = () => {
                                         <div className="text-xs text-slate-600 font-medium">{member.institution || 'N/A'}</div>
                                         <div className="text-[10px] text-blue-500 font-bold mt-1 uppercase">{member.academic_rank || 'No Rank'}</div>
                                     </td>
-                                    <td className="px-6 py-4">
+                                    {/* <td className="px-6 py-4">
                                         <select
                                             value={member.role}
                                             onChange={(e) => handleRoleChange(member.id, e.target.value)}
@@ -252,6 +265,21 @@ const AdminDashboard = () => {
                                         >
                                             {['admin', 'member', 'managing_editor', 'associate_editor', 'editor_in_chief', 'production_staff'].map(role => (
                                                 <option key={role} value={role}>{role}</option>
+                                            ))}
+                                        </select>
+                                    </td> */}
+                                    <td className="px-6 py-4">
+                                        <select
+                                            value={member.role}
+                                            onChange={(e) => handleRoleChange(member.id, e.target.value)}
+                                            className="text-[10px] font-black uppercase border border-slate-200 rounded px-2 py-1 bg-white"
+                                        >
+                                            {[
+                                                'admin', 'member', 'author', 'reviewer', 
+                                                'scientific_committee', 'conference_manager', 
+                                                'managing_editor', 'associate_editor', 'editor_in_chief', 'production_staff'
+                                            ].map(role => (
+                                                <option key={role} value={role}>{role.replace(/_/g, ' ')}</option>
                                             ))}
                                         </select>
                                     </td>

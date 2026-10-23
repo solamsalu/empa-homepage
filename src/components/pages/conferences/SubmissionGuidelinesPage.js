@@ -1,109 +1,275 @@
+// src/components/pages/conferences/SubmissionGuidelinesPage.js
 import React from 'react';
-import { Link } from 'react-router-dom'; 
-import { HelpCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { 
+  FileText, 
+  ShieldCheck, 
+  Layers, 
+  Calendar, 
+  Download, 
+  CheckCircle2, 
+  HelpCircle, 
+  ArrowRight, 
+  Code2, 
+  Scale, 
+  Cpu, 
+  BookOpen, 
+  Clock, 
+  AlertCircle 
+} from 'lucide-react';
+import PrimaryButton from '../../common/PrimaryButton';
 
 const SubmissionGuidelinesPage = () => {
     return (
-        <div className="p-4 sm:p-6 lg:p-8 bg-white rounded-lg shadow-xl prose-lg max-w-none mx-auto font-sans">
-            <h2 className="text-4xl font-extrabold text-blue-900 mb-8 text-center leading-tight">Conference Paper Submission Guidelines</h2>
-            <p className="text-xl text-gray-700 leading-relaxed text-center max-w-3xl mx-auto mb-12">
-                Carefully review the guidelines below to ensure your submission meets all requirements for the EMPA Annual Conference. Adherence to these guidelines is crucial for a smooth review process.
-            </p>
-
-            <section className="mb-10 p-6 bg-blue-50 rounded-xl shadow-md border border-blue-200">
-                <h3 className="text-3xl font-bold text-blue-800 mb-6 flex items-center">
-                    <svg className="w-8 h-8 mr-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                    1. Paper Format and Length
-                </h3>
-                <ul className="list-disc pl-8 space-y-3 text-gray-800 text-lg">
-                    <li><strong>Language:</strong> Papers must be written exclusively in English.</li>
-                    <li><strong>Page Setup:</strong> A4 paper format with 1-inch (2.54 cm) margins on all sides.</li>
-                    <li><strong>Font:</strong> Times New Roman, 12-point.</li>
-                    <li><strong>Line Spacing:</strong> 1.5 lines.</li>
-                    <li><strong>Length:</strong> Maximum 8-10 pages, including figures, tables, and references.</li>
-                    <li><strong>File Format:</strong> Submissions are accepted in PDF format ONLY. (Max 4MB file size as per submission portal)</li>
-                </ul>
-            </section>
-
-            <section className="mb-10 p-6 bg-green-50 rounded-xl shadow-md border border-green-200">
-                <h3 className="text-3xl font-bold text-green-800 mb-6 flex items-center">
-                    <svg className="w-8 h-8 mr-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 19.477 5.754 20 7.5 20s3.332-.477 4.5-1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 19.477 18.246 20 16.5 20c-1.746 0-3.332-.477-4.5-1.253"></path></svg>
-                    2. Paper Structure
-                </h3>
-                <p className="text-gray-800 text-lg mb-4">
-                    Your paper should follow a standard academic structure to ensure clarity and completeness. Recommended sections include:
+        <div className="font-sans space-y-12 max-w-6xl mx-auto py-6">
+            
+            {/* 1. Header Section */}
+            <div className="text-center max-w-3xl mx-auto space-y-3">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest text-blue-700 bg-blue-50 border border-blue-200">
+                    <BookOpen size={13} className="text-blue-600" />
+                    EMPA Annual Conference Guidelines
+                </span>
+                <h1 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight">
+                    Conference Paper Submission Guidelines
+                </h1>
+                <p className="text-base sm:text-lg text-slate-600 leading-relaxed">
+                    Please carefully review these instructions before submitting your manuscript. Strict compliance ensures an efficient double-blind peer review and seamless indexing in the official conference proceedings.
                 </p>
-                <ol className="list-decimal pl-8 space-y-3 text-gray-800 text-lg">
-                    <li><strong>Title:</strong> Concise, informative, and reflecting the paper's core content.</li>
-                    <li><strong>Author(s) and Affiliation(s):</strong> Full names and institutional affiliations.</li>
-                    <li><strong>Abstract:</strong> A summary of 250-300 words outlining the problem, methodology, key results, and conclusions.</li>
-                    <li><strong>Keywords:</strong> 4-6 relevant keywords to facilitate indexing and search.</li>
-                    <li><strong>Introduction:</strong> Background, problem statement, research objectives, and paper organization.</li>
-                    <li><strong>Literature Review:</strong> Overview of existing research and how your work contributes.</li>
-                    <li><strong>Methodology:</strong> Detailed description of the methods, materials, or theoretical framework used.</li>
-                    <li><strong>Results and Discussion:</strong> Presentation of findings, analysis, and interpretation.</li>
-                    <li><strong>Conclusion:</strong> Summary of key findings, implications, limitations, and future work.</li>
-                    <li><strong>References:</strong> A comprehensive list of all cited works.</li>
-                </ol>
-            </section>
+            </div>
 
-            <section className="mb-10 p-6 bg-yellow-50 rounded-xl shadow-md border border-yellow-200">
-                <h3 className="text-3xl font-bold text-yellow-800 mb-6 flex items-center">
-                    <svg className="w-8 h-8 mr-3 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h.01M7 12h.01M7 15h.01M7 18h.01M17 12h.01M17 15h.01M17 18h.01M3 21h18a2 2 0 002-2V8a2 2 0 00-2-2H3a2 2 0 00-2 2v11a2 2 0 002 2z"></path></svg>
-                    3. Submission Process & Important Dates
-                </h3>
-                <ol className="list-decimal pl-8 space-y-3 text-gray-800 text-lg">
-                    <li>Navigate to the <span className="font-bold text-blue-800">"Submit a Paper"</span> tab on this Conference page.</li>
-                    <li>Complete all required fields in the author and paper information sections.</li>
-                    <li>Upload your paper ensuring it is in PDF format and does not exceed 4MB.</li>
-                    <li>Carefully read and check the declaration boxes (Originality, Terms & Conditions).</li>
-                    <li>Click the 'Submit Paper' button to finalize your submission.</li>
-                </ol>
-                <p className="text-gray-800 text-lg mt-6 font-semibold">Tentative Key Dates:</p>
-                <ul className="list-disc pl-8 space-y-2 text-gray-800 text-lg">
-                    <li><strong>Paper Submission Deadline:</strong> <span className="font-bold text-red-700">March 01, 2026</span></li>
-                    <li><strong>Review Notification:</strong> <span className="font-bold text-green-700">April 15, 2026</span></li>
-                    <li><strong>Camera-ready Submission:</strong> <span className="font-bold text-blue-700">May 01, 2026</span></li>
-                    <li><strong>Conference Dates:</strong> <span className="font-bold text-indigo-700">May 15-17, 2026</span></li>
-                </ul>
-            </section>
+            {/* 2. Quick Standards Snapshot Bar */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[
+                    { label: "Manuscript Format", value: "PDF Only (LaTeX Preferred)", icon: <Code2 size={16} className="text-blue-600" /> },
+                    { label: "Review Protocol", value: "Double-Blind (2 Reviewers)", icon: <ShieldCheck size={16} className="text-emerald-600" /> },
+                    { label: "Page & Size Limit", value: "8–10 Pages (Max 15MB)", icon: <Layers size={16} className="text-indigo-600" /> },
+                    { label: "Proceedings Output", value: "Indexed EMPA Proceedings", icon: <CheckCircle2 size={16} className="text-amber-500" /> }
+                ].map((item, idx) => (
+                    <div key={idx} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-1">
+                        <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-wider">
+                            {item.icon}
+                            <span>{item.label}</span>
+                        </div>
+                        <span className="text-sm font-black text-slate-900">{item.value}</span>
+                    </div>
+                ))}
+            </div>
 
-            <section className="mb-10 p-6 bg-purple-50 rounded-xl shadow-md border border-purple-200">
-                <h3 className="text-3xl font-bold text-purple-800 mb-6 flex items-center">
-                    <svg className="w-8 h-8 mr-3 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path></svg>
-                    4. Review Process and Publication
-                </h3>
-                <p className="text-gray-800 text-lg leading-relaxed mb-4">
-                    All submitted papers will undergo a rigorous double-blind peer review process. This ensures fairness and the highest quality of accepted research. Each submission will be evaluated by at least two independent reviewers from the program committee, based on originality, methodology, significance, and clarity.
-                </p>
-                <p className="text-gray-800 text-lg leading-relaxed">
-                    Accepted papers will be formally published in the official conference proceedings, which are planned for indexing in major academic databases. Authors will retain copyright of their work, allowing them to further publish their extended research in journals.
-                </p>
-            </section>
-
-            <div className="mt-12 p-8 bg-blue-100 rounded-2xl border border-blue-300 text-gray-800 text-center shadow-lg">
-                <h3 className="text-3xl font-bold text-blue-900 mb-4 flex items-center justify-center">
-                <HelpCircle className="w-9 h-9 mr-3 text-blue-700" />
-                Questions or Need Assistance?
-                </h3>
-
-                <p className="text-xl mb-6">
-                    If you have any further questions or require assistance with your submission, please do not hesitate to contact our dedicated support team.
-                </p>
-                <div className="flex flex-col sm:flex-row justify-center items-center gap-4 text-lg font-medium">
-                    <p>Email: <a href="mailto:conference@empa.org" className="text-blue-700 hover:underline transition-colors duration-200">conference@empa.org</a></p>
-                    <span className="hidden sm:block text-gray-500">|</span>
-                    <p>Phone: <a href="tel:+251111239461" className="text-blue-700 hover:underline transition-colors duration-200">+251-111239461</a></p>
+            {/* 3. Core Guidelines Pillars */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                {/* Section 1: Paper Format & Technical Specs */}
+                <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4 hover:border-blue-300 transition">
+                    <div className="flex items-center gap-3 text-slate-900 font-bold text-lg">
+                        <div className="p-2.5 bg-blue-50 text-blue-600 rounded-2xl">
+                            <Code2 size={20} />
+                        </div>
+                        <h3>1. Technical Formatting & Length</h3>
+                    </div>
+                    <ul className="text-xs sm:text-sm text-slate-600 space-y-2.5 leading-relaxed">
+                        <li className="flex items-start gap-2">
+                            <CheckCircle2 size={16} className="text-blue-600 shrink-0 mt-0.5" />
+                            <span><strong>Language:</strong> Papers must be prepared exclusively in English with clear mathematical notation.</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <CheckCircle2 size={16} className="text-blue-600 shrink-0 mt-0.5" />
+                            <span><strong>Document Engine:</strong> Authors are strongly encouraged to use standard <strong className="text-slate-800">LaTeX</strong> (<code className="bg-slate-100 px-1 py-0.5 rounded text-blue-700">amsart</code> or EMPA template). Manuscripts must be compiled into a single PDF.</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <CheckCircle2 size={16} className="text-blue-600 shrink-0 mt-0.5" />
+                            <span><strong>Length & Limits:</strong> Full papers should range between <strong className="text-slate-800">8 to 10 pages</strong> (including figures, tables, and bibliography). File size must not exceed <strong className="text-slate-800">15MB</strong>.</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <CheckCircle2 size={16} className="text-blue-600 shrink-0 mt-0.5" />
+                            <span><strong>Page Setup:</strong> Standard A4 format with 1-inch (2.54 cm) margins on all sides and 11pt or 12pt standard typeface.</span>
+                        </li>
+                    </ul>
                 </div>
-                <div className="mt-6">
-                    <Link to="/contact" className="inline-flex items-center px-6 py-3 border border-transparent text-base font-semibold rounded-lg text-white
-                        bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
-                        transition-all duration-300 shadow-md">
-                        Visit Our Contact Page
-                        <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+
+                {/* Section 2: Strict Double-Blind Anonymization */}
+                <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4 hover:border-emerald-300 transition">
+                    <div className="flex items-center gap-3 text-slate-900 font-bold text-lg">
+                        <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-2xl">
+                            <ShieldCheck size={20} />
+                        </div>
+                        <h3>2. Double-Blind Anonymization Protocol</h3>
+                    </div>
+                    <ul className="text-xs sm:text-sm text-slate-600 space-y-2.5 leading-relaxed">
+                        <li className="flex items-start gap-2">
+                            <CheckCircle2 size={16} className="text-emerald-600 shrink-0 mt-0.5" />
+                            <span><strong>Version 1 (Initial Blind Draft):</strong> Remove all author names, institutional affiliations, contact emails, and personal headers from the PDF draft.</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <CheckCircle2 size={16} className="text-emerald-600 shrink-0 mt-0.5" />
+                            <span><strong>Self-Citations:</strong> Reference your own prior publications in the third person (e.g., cite as <em>"In [4], Kebede demonstrated..."</em> rather than <em>"In our previous paper [4]..."</em>).</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <CheckCircle2 size={16} className="text-emerald-600 shrink-0 mt-0.5" />
+                            <span><strong>Acknowledgments:</strong> Omit university research grant numbers or funding credits in the review draft. These are added during the final Camera-Ready phase.</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <CheckCircle2 size={16} className="text-emerald-600 shrink-0 mt-0.5" />
+                            <span><strong>Document Metadata:</strong> Clear author properties from PDF metadata properties before uploading.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                {/* Section 3: Paper Structure & Nomenclature */}
+                <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4 hover:border-indigo-300 transition">
+                    <div className="flex items-center gap-3 text-slate-900 font-bold text-lg">
+                        <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-2xl">
+                            <Layers size={20} />
+                        </div>
+                        <h3>3. Academic Structure & Classification</h3>
+                    </div>
+                    <ul className="text-xs sm:text-sm text-slate-600 space-y-2.5 leading-relaxed">
+                        <li className="flex items-start gap-2">
+                            <CheckCircle2 size={16} className="text-indigo-600 shrink-0 mt-0.5" />
+                            <span><strong>Title & Abstract:</strong> Title should be informative and concise. The abstract (200–300 words) must outline the problem statement, analytical methods, core theorems, and significance.</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <CheckCircle2 size={16} className="text-indigo-600 shrink-0 mt-0.5" />
+                            <span><strong>MSC 2020 Codes:</strong> Authors must provide primary and secondary <strong className="text-slate-800">Mathematics Subject Classification</strong> codes alongside 4–6 relevant keywords.</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <CheckCircle2 size={16} className="text-indigo-600 shrink-0 mt-0.5" />
+                            <span><strong>Standard Sections:</strong> Introduction $\rightarrow$ Theoretical Framework / Methodology $\rightarrow$ Main Results & Proofs $\rightarrow$ Numerical Experiments (if applicable) $\rightarrow$ Conclusion $\rightarrow$ References.</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <CheckCircle2 size={16} className="text-indigo-600 shrink-0 mt-0.5" />
+                            <span><strong>Bibliography:</strong> Citations should follow standard AMS/BibTeX convention with full journal titles and DOIs where available.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                {/* Section 4: Ethics, Originality & AI Policy */}
+                <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4 hover:border-amber-300 transition">
+                    <div className="flex items-center gap-3 text-slate-900 font-bold text-lg">
+                        <div className="p-2.5 bg-amber-50 text-amber-600 rounded-2xl">
+                            <Scale size={20} />
+                        </div>
+                        <h3>4. Publication Ethics & AI Policy</h3>
+                    </div>
+                    <ul className="text-xs sm:text-sm text-slate-600 space-y-2.5 leading-relaxed">
+                        <li className="flex items-start gap-2">
+                            <CheckCircle2 size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                            <span><strong>Originality:</strong> All submissions must report original, previously unpublished research. Simultaneous submission to other conferences or journals is strictly prohibited.</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <CheckCircle2 size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                            <span><strong>Similarity Index:</strong> Manuscripts are systematically verified with plagiarism detection software. Overlapping content exceeding 15% will be rejected automatically.</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <CheckCircle2 size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                            <span><strong>Generative AI (LLMs):</strong> Generative AI tools (e.g., ChatGPT, Claude) do not meet the criteria for authorship and cannot be credited as authors. Use of AI for grammar refinement must be disclosed.</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <CheckCircle2 size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                            <span><strong>Author Consent:</strong> Submission implies that all co-authors have reviewed and approved the manuscript contents and agreed to presentation.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            {/* 4. Submission & Peer-Review Lifecycle Workflow */}
+            <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+                <div className="border-b border-slate-100 pb-4">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-blue-600 block">
+                        Evaluation Protocol
+                    </span>
+                    <h3 className="text-xl sm:text-2xl font-black text-slate-900 mt-1">
+                        Review Process & Proceedings Publication
+                    </h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+                        <span className="text-xs font-black text-blue-600 uppercase tracking-widest">Stage 1</span>
+                        <h4 className="text-sm font-bold text-slate-900">Technical Triage</h4>
+                        <p className="text-xs text-slate-500 leading-relaxed">
+                            Submissions are checked for scope, track assignment, formatting adherence, and complete anonymity.
+                        </p>
+                    </div>
+
+                    <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+                        <span className="text-xs font-black text-emerald-600 uppercase tracking-widest">Stage 2</span>
+                        <h4 className="text-sm font-bold text-slate-900">Double-Blind Review</h4>
+                        <p className="text-xs text-slate-500 leading-relaxed">
+                            Evaluated by at least <strong>two independent referees</strong> scoring Originality, Methodology, Significance, and Clarity.
+                        </p>
+                    </div>
+
+                    <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+                        <span className="text-xs font-black text-indigo-600 uppercase tracking-widest">Stage 3</span>
+                        <h4 className="text-sm font-bold text-slate-900">Chair Decision</h4>
+                        <p className="text-xs text-slate-500 leading-relaxed">
+                            Official notice issued: <em>Accepted for Oral Lecture</em>, <em>Accepted for Poster</em>, <em>Revisions Required</em>, or <em>Declined</em>.
+                        </p>
+                    </div>
+
+                    <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+                        <span className="text-xs font-black text-amber-600 uppercase tracking-widest">Stage 4</span>
+                        <h4 className="text-sm font-bold text-slate-900">Camera-Ready & Proceedings</h4>
+                        <p className="text-xs text-slate-500 leading-relaxed">
+                            Authors upload Version 2 (author names restored). Published in official indexed proceedings with verifiable presentation certificates.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            {/* 5. Downloads, Templates & Portal Navigation Card */}
+            <div className="bg-gradient-to-br from-blue-900 via-indigo-900 to-slate-900 p-8 sm:p-12 rounded-3xl text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-8">
+                <div className="space-y-3 text-center md:text-left max-w-xl">
+                    <span className="text-xs font-black uppercase tracking-widest text-blue-300">
+                        Official Author Package
+                    </span>
+                    <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                        Download LaTeX Templates & Guides
+                    </h3>
+                    <p className="text-xs sm:text-sm text-blue-100 leading-relaxed">
+                        Download the official EMPA Conference LaTeX package (including class file, sample article structure, and BibTeX style) or consult the comprehensive PDF handbook.
+                    </p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto shrink-0">
+                    <a
+                        href="/downloads/JEMPA_Template.zip"
+                        download
+                        className="w-full sm:w-auto px-5 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2"
+                    >
+                        <Download size={16} /> Download LaTeX Package (.zip)
+                    </a>
+                    
+                    <Link
+                        to="/submit-paper"
+                        className="w-full sm:w-auto px-5 py-3 bg-white hover:bg-slate-100 text-slate-900 rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-lg flex items-center justify-center gap-2"
+                    >
+                        <span>Go to Submission Portal</span>
+                        <ArrowRight size={15} />
                     </Link>
                 </div>
             </div>
+
+            {/* 6. Help & Inquiries Footer Card */}
+            <div className="p-8 bg-slate-50 border border-slate-200 rounded-3xl text-center space-y-3">
+                <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto border border-blue-100">
+                    <HelpCircle size={24} />
+                </div>
+                <h4 className="text-xl font-bold text-slate-900">
+                    Questions Regarding Conference Guidelines?
+                </h4>
+                <p className="text-xs sm:text-sm text-slate-600 max-w-xl mx-auto leading-relaxed">
+                    If you have questions regarding thematic track alignment, formatting questions, or special presentation accommodations, please reach out to the Program Committee Secretariat.
+                </p>
+                <div className="flex flex-col sm:flex-row justify-center items-center gap-4 text-xs font-bold text-slate-700 pt-2">
+                    <p>Email: <a href="mailto:conference@eth-math.org" className="text-blue-600 hover:underline">conference@eth-math.org</a></p>
+                    <span className="hidden sm:inline text-slate-300">|</span>
+                    <p>Phone: <a href="tel:+251111239461" className="text-blue-600 hover:underline">+251-111-239461</a></p>
+                    <span className="hidden sm:inline text-slate-300">|</span>
+                    <Link to="/contact" className="text-blue-600 hover:underline">Contact Support Desk</Link>
+                </div>
+            </div>
+
         </div>
     );
 };
