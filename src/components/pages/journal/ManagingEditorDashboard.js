@@ -22,6 +22,8 @@ import LatexEditor from '../../common/LatexEditor';
 import AddArchivedEdition from './Editor/AddArchivedEdition';
 import { toast } from 'react-toastify';
 
+import RubricScoreDisplay from './common/RubricScoreDisplay';
+
 // --- DYNAMIC PRODUCTION CONFIGURATION ---
 const PRODUCTION_STEPS = {
     'ACCEPTED': { label: 'Assign Staff', icon: <UserPlus size={16} className="inline mr-2" />, color: 'bg-emerald-600 hover:bg-emerald-700', modal: 'assign-production' },
@@ -442,21 +444,20 @@ const ManagingEditorDashboard = () => {
                                                     </h5>
 
                                                     <div className="grid md:grid-cols-2 gap-4">
+                                                        {/* In ManagingEditorDashboard.js inside Decision Reviewer Reports: */}
                                                         {p.reviews?.filter(r => r.is_completed).map((rev, idx) => (
-                                                            <div key={idx} className="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm text-xs space-y-2.5">
-                                                                <div className="border-b border-slate-100 pb-2">
-                                                                    <span className="font-bold text-slate-900 block text-sm">
-                                                                        {rev.reviewer_name || `Reviewer ${idx + 1}`}
-                                                                    </span>
-                                                                    <span className="text-[11px] text-slate-400">
-                                                                        {rev.reviewer_email || 'Email unavailable'}
-                                                                    </span>
-                                                                    <span className="inline-block mt-1 font-black text-[10px] uppercase text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">
-                                                                        Verdict: {rev.recommendation || 'N/A'}
-                                                                    </span>
+                                                            <div key={idx} className="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm text-xs space-y-3">
+                                                                <div className="border-b border-slate-100 pb-2 flex justify-between items-center">
+                                                                    <div>
+                                                                        <span className="font-bold text-slate-900 block text-sm">{rev.reviewer_name}</span>
+                                                                        <span className="text-[11px] text-slate-400">{rev.reviewer_email}</span>
+                                                                    </div>
+                                                                    <span className="badge">{rev.recommendation}</span>
                                                                 </div>
 
-                                                                {/* Confidential note to editor */}
+                                                                {/* ✅ RENDER RUBRICS FOR MANAGING EDITOR & EIC */}
+                                                                <RubricScoreDisplay rawScores={rev.rubric_scores} />
+
                                                                 {rev.comments_for_editor && (
                                                                     <div className="p-2.5 bg-amber-50/70 rounded-xl border border-amber-100 text-amber-900 italic">
                                                                         <span className="font-black text-[9px] uppercase block mb-1 text-amber-700">Confidential Note to Editor:</span>
@@ -464,14 +465,13 @@ const ManagingEditorDashboard = () => {
                                                                     </div>
                                                                 )}
 
-                                                                {/* Public feedback to author */}
                                                                 <div className="text-slate-600 leading-relaxed pt-1">
                                                                     <span className="font-black text-[9px] uppercase block mb-1 text-slate-400">Comments for Author:</span>
                                                                     <LatexRenderer content={rev.comments_for_author} />
                                                                 </div>
                                                             </div>
                                                         ))}
-                                                    </div>
+                                                                                                                                                       </div>
                                                 </div>
                                             </div>
                                         )}

@@ -11,6 +11,7 @@ import {
     History, AlertCircle, Users, Clock, CheckCircle2, XCircle, Mail 
 } from 'lucide-react';
 import LatexRenderer from '../../common/LatexRenderer';
+import RubricScoreDisplay from './common/RubricScoreDisplay';
 
 const AssociateEditorDashboard = () => {
     const { authToken, userRole, isAuthReady } = useContext(AuthContext);
@@ -405,60 +406,88 @@ const AssociateEditorDashboard = () => {
                                                     </div>
 
                                                     {p.reviews?.filter(r => r.is_completed == 1).map((rev, idx) => (
-                                                        <div key={idx} className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm space-y-2">
-                                                            <div className="flex justify-between items-center mb-1 flex-wrap gap-2">
-                                                                <span className="font-bold text-indigo-900 text-xs">
-                                                                    Reviewer: {rev.reviewer_name || `Expert #${idx + 1}`} (Round {rev.round_number || 1})
-                                                                </span>
-                                                                <div className="flex items-center gap-2">
-                                                                    <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full ${
-                                                                        rev.recommendation?.toLowerCase().includes('reject')
-                                                                            ? 'bg-rose-100 text-rose-600'
-                                                                            : 'bg-emerald-100 text-emerald-600'
-                                                                    }`}>
-                                                                        {rev.recommendation}
-                                                                    </span>
+                                                        // <div key={idx} className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm space-y-2">
+                                                        //     <div className="flex justify-between items-center mb-1 flex-wrap gap-2">
+                                                        //         <span className="font-bold text-indigo-900 text-xs">
+                                                        //             Reviewer: {rev.reviewer_name || `Expert #${idx + 1}`} (Round {rev.round_number || 1})
+                                                        //         </span>
+                                                        //         <div className="flex items-center gap-2">
+                                                        //             <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full ${
+                                                        //                 rev.recommendation?.toLowerCase().includes('reject')
+                                                        //                     ? 'bg-rose-100 text-rose-600'
+                                                        //                     : 'bg-emerald-100 text-emerald-600'
+                                                        //             }`}>
+                                                        //                 {rev.recommendation}
+                                                        //             </span>
 
-                                                                    {/* Direct Contact Button in Intelligence Box */}
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => setContactTarget({
-                                                                            type: 'reviewer',
-                                                                            paper: p,
-                                                                            name: rev.reviewer_name || `Reviewer #${idx + 1}`,
-                                                                            email: rev.reviewer_email || rev.email || '',
-                                                                            endpoint: `${API_BASE_URL}/journal-papers/reviews/${rev.id || rev.review_id}/contact`
-                                                                        })}
-                                                                        className="px-2 py-0.5 bg-slate-50 hover:bg-indigo-50 text-indigo-600 border border-slate-200 rounded-md text-[11px] font-bold transition-all flex items-center gap-1"
-                                                                    >
-                                                                        <Mail size={11} />
-                                                                        <span>Message</span>
-                                                                    </button>
-                                                                </div>
-                                                            </div>
+                                                        //             {/* Direct Contact Button in Intelligence Box */}
+                                                        //             <button
+                                                        //                 type="button"
+                                                        //                 onClick={() => setContactTarget({
+                                                        //                     type: 'reviewer',
+                                                        //                     paper: p,
+                                                        //                     name: rev.reviewer_name || `Reviewer #${idx + 1}`,
+                                                        //                     email: rev.reviewer_email || rev.email || '',
+                                                        //                     endpoint: `${API_BASE_URL}/journal-papers/reviews/${rev.id || rev.review_id}/contact`
+                                                        //                 })}
+                                                        //                 className="px-2 py-0.5 bg-slate-50 hover:bg-indigo-50 text-indigo-600 border border-slate-200 rounded-md text-[11px] font-bold transition-all flex items-center gap-1"
+                                                        //             >
+                                                        //                 <Mail size={11} />
+                                                        //                 <span>Message</span>
+                                                        //             </button>
+                                                        //         </div>
+                                                        //     </div>
 
-                                                            {rev.comments_for_editor && (
-                                                                <div className="p-3 bg-amber-50/70 rounded-xl border border-dotted border-amber-200">
-                                                                    <span className="text-[9px] font-black text-amber-700 uppercase block mb-1">
-                                                                        Confidential Note to AE:
-                                                                    </span>
-                                                                    <div className="text-xs text-amber-900 italic">
-                                                                        <LatexRenderer content={rev.comments_for_editor} />
-                                                                    </div>
-                                                                </div>
-                                                            )}
+                                                        //     {rev.comments_for_editor && (
+                                                        //         <div className="p-3 bg-amber-50/70 rounded-xl border border-dotted border-amber-200">
+                                                        //             <span className="text-[9px] font-black text-amber-700 uppercase block mb-1">
+                                                        //                 Confidential Note to AE:
+                                                        //             </span>
+                                                        //             <div className="text-xs text-amber-900 italic">
+                                                        //                 <LatexRenderer content={rev.comments_for_editor} />
+                                                        //             </div>
+                                                        //         </div>
+                                                        //     )}
 
-                                                            {rev.comments_for_author && (
-                                                                <div className="p-2.5 bg-slate-50 rounded-lg">
-                                                                    <span className="text-[9px] font-black text-slate-400 uppercase block mb-1">
-                                                                        Public Feedback for Author:
-                                                                    </span>
-                                                                    <div className="text-xs text-slate-600">
-                                                                        <LatexRenderer content={rev.comments_for_author} />
-                                                                    </div>
-                                                                </div>
-                                                            )}
+                                                        //     {rev.comments_for_author && (
+                                                        //         <div className="p-2.5 bg-slate-50 rounded-lg">
+                                                        //             <span className="text-[9px] font-black text-slate-400 uppercase block mb-1">
+                                                        //                 Public Feedback for Author:
+                                                        //             </span>
+                                                        //             <div className="text-xs text-slate-600">
+                                                        //                 <LatexRenderer content={rev.comments_for_author} />
+                                                        //             </div>
+                                                        //         </div>
+                                                        //     )}
+                                                        // </div>
+                                                        <div key={idx} className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm space-y-3">
+                                                        {/* Reviewer Header */}
+                                                        <div className="flex justify-between items-center mb-1">
+                                                            <span className="font-bold text-indigo-900 text-xs">
+                                                                Reviewer: {rev.reviewer_name || `Expert #${idx + 1}`} (Round {rev.round_number || 1})
+                                                            </span>
+                                                            <span className="badge">{rev.recommendation}</span>
                                                         </div>
+
+                                                        {/* ✅ RENDER RUBRIC SCORES HERE */}
+                                                        <RubricScoreDisplay rawScores={rev.rubric_scores} />
+
+                                                        {/* Confidential note to editor */}
+                                                        {rev.comments_for_editor && (
+                                                            <div className="p-3 bg-amber-50/70 rounded-xl border border-dotted border-amber-200">
+                                                                <span className="text-[9px] font-black text-amber-700 uppercase block mb-1">Confidential Note to AE:</span>
+                                                                <LatexRenderer content={rev.comments_for_editor} />
+                                                            </div>
+                                                        )}
+
+                                                        {/* Comments for author */}
+                                                        {rev.comments_for_author && (
+                                                            <div className="p-2.5 bg-slate-50 rounded-lg">
+                                                                <span className="text-[9px] font-black text-slate-400 uppercase block mb-1">Public Feedback for Author:</span>
+                                                                <LatexRenderer content={rev.comments_for_author} />
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                     ))}
                                                 </div>
                                             )}

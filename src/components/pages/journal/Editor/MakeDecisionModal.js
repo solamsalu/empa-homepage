@@ -6,6 +6,7 @@ import { X, Send, ShieldCheck, MessageSquare, Lock, Eye, AlertCircle } from 'luc
 import PrimaryButton from '../../../common/PrimaryButton';
 import LatexEditor from '../../../common/LatexEditor';
 import LatexRenderer from '../../../common/LatexRenderer';
+import RubricScoreDisplay from '../common/RubricScoreDisplay';
 import { toast } from 'react-toastify';
 
 const MakeDecisionModal = ({ paper, onClose, onDecisionMade }) => {
@@ -29,6 +30,9 @@ const MakeDecisionModal = ({ paper, onClose, onDecisionMade }) => {
 
     const title = isRecommendation ? "Submit Recommendation to Managing Editor" : "Final Editorial Decision";
     const btnLabel = isRecommendation ? "Submit Recommendation" : "Finalize & Publish Decision";
+
+    // Clean title for header (removes <p> tags)
+    const cleanHeaderTitle = (paper?.title || '').replace(/<[^>]+>/g, '').trim();
 
     useEffect(() => {
         const fetchReviews = async () => {
@@ -61,12 +65,12 @@ const MakeDecisionModal = ({ paper, onClose, onDecisionMade }) => {
             // Build payload based on role
             const payload = isRecommendation ? {
                 status: decision,
-                editor_notes: internalNotes,              // Stored as internal_workflow_notes (confidential to ME)
+                editor_notes: internalNotes,                 // Stored as internal_workflow_notes (confidential to ME)
                 ae_comments_for_author: aeCommentsForAuthor, // Stored as ae_comments_for_author (visible to author)
                 is_recommendation: true
             } : {
                 status: decision,
-                editor_notes: editorNotes,                // Stored as editor_decision_notes (formal decision letter)
+                editor_notes: editorNotes,                   // Stored as editor_decision_notes (formal decision letter)
                 is_recommendation: false
             };
 
@@ -77,13 +81,16 @@ const MakeDecisionModal = ({ paper, onClose, onDecisionMade }) => {
             );
 
             if (response.data.status === 'success' || response.status === 200) {
+                toast.success(isRecommendation ? "Recommendation submitted to Managing Editor!" : "Final decision published successfully!");
                 onDecisionMade();
             } else {
                 setError("Server saved data but returned unexpected status.");
             }
         } catch (err) {
             console.error("Decision Error:", err);
-            setError(err.response?.data?.message || "Failed to submit decision.");
+            const msg = err.response?.data?.message || "Failed to submit decision.";
+            toast.error(msg);
+            setError(msg);
         } finally {
             setIsSubmitting(false);
         }
@@ -101,9 +108,8 @@ const MakeDecisionModal = ({ paper, onClose, onDecisionMade }) => {
                         </div>
                         <div>
                             <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">{title}</h3>
-                            
-                            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">
-                                Manuscript #ID-{paper.id}: {paper.title}
+                            <p className="text-xs text-slate-500 font-medium truncate max-w-xl mt-0.5">
+                                Manuscript <span className="font-mono font-bold text-slate-800">#ID-{paper.id}</span>: {cleanHeaderTitle}
                             </p>
                         </div>
                     </div>
@@ -189,6 +195,9 @@ const MakeDecisionModal = ({ paper, onClose, onDecisionMade }) => {
                                                 {r.recommendation}
                                             </span>
                                         </div>
+
+                                        {/* ✅ REVIEWER RUBRICS BREAKDOWN */}
+                                        <RubricScoreDisplay rawScores={r.rubric_scores} />
 
                                         {/* Confidential comments to Editor */}
                                         {r.comments_for_editor && (

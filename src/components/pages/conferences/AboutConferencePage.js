@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { API_BASE_URL } from '../../../utils/constants';
 import { AuthContext } from '../../../context/AuthContext'; // 🌟 1. Consume AuthContext
-import KeynoteSpeakersSection from './KeynoteSpeakersSection';
+// import KeynoteSpeakersSection from './KeynoteSpeakersSection';
 
 const AboutConferencePage = () => {
     // 🌟 2. Retrieve isSubmissionOpen from AuthContext
@@ -162,7 +162,7 @@ const AboutConferencePage = () => {
             </section>
 
             {/* Keynote & Plenary Speakers Section */}
-            <KeynoteSpeakersSection />
+            {/* <KeynoteSpeakersSection /> */}
 
             {/* Key Themes & Topics */}
             <section className="p-8 bg-emerald-50/60 rounded-3xl border border-emerald-200 space-y-4">

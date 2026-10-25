@@ -163,7 +163,7 @@ const ConferenceDetailsPage = () => {
                 </div>
 
                 {/* 🌟 EMBEDDED PROGRAM / SCHEDULE VIEW 🌟 */}
-                <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200 shadow-sm space-y-6">
+                {/* <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200 shadow-sm space-y-6">
                     <div className="border-b border-slate-100 pb-4">
                         <span className="text-[10px] font-black uppercase tracking-widest text-blue-600 block">
                             Scientific Timetable
@@ -176,7 +176,7 @@ const ConferenceDetailsPage = () => {
                     <ConferenceScheduleView 
                         conferenceId={conference.conference_id || conference.id} 
                     />
-                </div>
+                </div> */}
 
             </div>
         </div>

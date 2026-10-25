@@ -422,7 +422,7 @@ import ConferenceReviewerDashboard from './components/pages/conferences/Conferen
 import ConferenceManagerDashboard from './components/pages/conferences/ConferenceManagerDashboard';
 import AdminConferenceDashboard from './components/pages/conferences/AdminConferenceDashboard';
 import AdminConferencePapersPage from './components/pages/conferences/AdminConferencePapersPage';
-
+import ConferencePortalPage from './components/pages/conferences/ConferencePortalPage.js'; 
 // --- System Pages ---
 import PrivacyPolicyPage from './components/layout/PrivacyPolicyPage.js';
 import TermsOfServicePage from './components/layout/TermsOfServicePage.js';
@@ -565,6 +565,8 @@ const App = () => {
                     <Route path="submit-paper" element={<SubmitPaperPage />} />
                     <Route path="submit-journal-paper" element={<SubmissionGatewayPage />} />
                     <Route path="jempa-portal" element={<ProtectedRoute><JempaPortalPage /></ProtectedRoute>} />
+                    <Route path="conferences/portal" element={<ProtectedRoute><ConferencePortalPage /></ProtectedRoute>} />
+
 
                     {/* --- New Conference Workspaces --- */}
                     <Route 
