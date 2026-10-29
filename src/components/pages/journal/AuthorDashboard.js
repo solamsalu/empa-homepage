@@ -12,6 +12,7 @@ import LatexRenderer from '../../common/LatexRenderer';
 import PublicationDetails from './PublicationDetails';
 import SubmitRevisionModal from './Author/SubmitReviewModal';
 import { toast } from 'react-toastify';
+import RubricScoreDisplay from './common/RubricScoreDisplay';
 
 import {
     FilePlus2, Upload, ClipboardCheck,
@@ -136,7 +137,6 @@ const AuthorDashboard = () => {
 
         const fd = new FormData();
         fd.append('title', cleanTitle);
-        fd.append('title', formData.title);
         fd.append('abstract', formData.abstract);
         fd.append('keywords', formData.keywords);
         fd.append('article_type', formData.articleType);
@@ -571,7 +571,7 @@ const AuthorDashboard = () => {
                                                     )}
 
                                                     {/* 2. Handling Associate Editor Comments to Author */}
-                                                    {(p.ae_comments_for_author || p.ae_recommendation) && (
+                                                    {/* {(p.ae_comments_for_author || p.ae_recommendation) && (
                                                         <div className="space-y-2">
                                                             <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest block">
                                                                 Handling Associate Editor Remarks:
@@ -589,10 +589,31 @@ const AuthorDashboard = () => {
                                                                 )}
                                                             </div>
                                                         </div>
+                                                    )} */}
+
+                                                    {/* Handling Associate Editor Remarks (Visible to Author) */}
+                                                    {(p.ae_comments_for_author || p.ae_recommendation) && (
+                                                        <div className="space-y-2">
+                                                            <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest block">
+                                                                Handling Associate Editor Remarks:
+                                                            </span>
+                                                            <div className="p-5 bg-white rounded-2xl border border-blue-100 text-slate-800 leading-relaxed shadow-sm font-serif space-y-2">
+                                                                {p.ae_recommendation && (
+                                                                    <p className="font-bold text-xs text-blue-900">
+                                                                        Editorial Verdict Recommendation: <span className="underline">{p.ae_recommendation}</span>
+                                                                    </p>
+                                                                )}
+                                                                {p.ae_comments_for_author ? (
+                                                                    <LatexRenderer content={p.ae_comments_for_author} />
+                                                                ) : (
+                                                                    <p className="text-xs text-slate-500 italic">The Associate Editor has submitted their recommendation to the Managing Editor.</p>
+                                                                )}
+                                                            </div>
+                                                        </div>
                                                     )}
 
                                                     {/* 3. Anonymous Technical Reviewer Feedback */}
-                                                    {p.reviews && p.reviews.length > 0 ? (
+                                                    {/* {p.reviews && p.reviews.length > 0 ? (
                                                         <div className="space-y-4">
                                                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">
                                                                 Blind Expert Reviewer Feedback:
@@ -631,6 +652,52 @@ const AuthorDashboard = () => {
                                                         </div>
                                                     ) : (
                                                         <p className="text-xs text-slate-400 italic">Peer reviewer reports will be visible here once compiled.</p>
+                                                    )} */}
+                                                    {/* In AuthorDashboard.js inside the reviews.map loop: */}
+
+                                                    {p.reviews && p.reviews.length > 0 ? (
+                                                        <div className="space-y-4">
+                                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">
+                                                                Blind Expert Reviewer Feedback:
+                                                            </span>
+                                                            <div className="grid gap-4">
+                                                                {p.reviews.map((rev, idx) => (
+                                                                    <div key={idx} className="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                                                                        <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                                                                            <div className="flex items-center gap-2">
+                                                                                <div className="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold">
+                                                                                    R{idx + 1}
+                                                                                </div>
+                                                                                <span className="text-xs font-bold text-slate-800">
+                                                                                    Anonymous Reviewer {idx + 1} (Round {rev.round_number || 1})
+                                                                                </span>
+                                                                            </div>
+                                                                            {rev.recommendation && (
+                                                                                <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full ${
+                                                                                    rev.recommendation.toLowerCase().includes('reject')
+                                                                                        ? 'bg-rose-100 text-rose-700'
+                                                                                        : rev.recommendation.toLowerCase().includes('revision')
+                                                                                            ? 'bg-amber-100 text-amber-700'
+                                                                                            : 'bg-emerald-100 text-emerald-700'
+                                                                                }`}>
+                                                                                    Recommendation: {rev.recommendation}
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+
+                                                                        {/* ✅ RENDER REVIEWER RUBRICS ON AUTHOR DASHBOARD */}
+                                                                        <RubricScoreDisplay rawScores={rev.rubric_scores} />
+
+                                                                        <div className="text-sm text-slate-700 leading-relaxed font-serif pt-1">
+                                                                            <span className="text-[9px] font-black text-slate-400 uppercase block mb-1">Reviewer Comments:</span>
+                                                                            <LatexRenderer content={rev.comments_for_author || "No specific author comments provided."} />
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <p className="text-xs text-slate-400 italic">Peer reviewer reports will be visible here once compiled by the editorial office.</p>
                                                     )}
                                                 </div>
                                             )}
