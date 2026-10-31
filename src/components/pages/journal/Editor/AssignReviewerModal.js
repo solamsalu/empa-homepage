@@ -223,20 +223,24 @@ const AssignReviewerModal = ({ paper, mode = 'reviewer', onClose, onAssignmentCo
                                     filteredCandidates
                                         .sort((a, b) => (a.category_rank || 2) - (b.category_rank || 2))
                                         .map((c) => {
-                                            const isSelected = selectedCandidate?.id === c.id && selectedCandidate?.user_type === c.user_type;
-                                            const isAE = c.role === 'associate_editor';
-                                            const isMember = c.user_type === 'MEMBER' && !isAE;
-                                            const isAuthor = c.user_type === 'AUTHOR';
+                                            const isSelected = selectedCandidate?.id === c.id;
+
+                                            // ✅ FIXED: Check role directly from the members table!
+                                            const role = (c.role || '').toLowerCase().trim();
+                                            const isAE = role === 'associate_editor';
+                                            const isReviewer = role === 'reviewer';
+                                            const isAuthor = role === 'author';
+                                            const isMember = role === 'member';
 
                                             return (
                                                 <div
                                                     key={c.unique_key || c.id}
                                                     onClick={() => setSelectedCandidate(c)}
                                                     className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${isSelected
-                                                        ? 'bg-indigo-50 border-indigo-400 shadow-sm ring-1 ring-indigo-400'
-                                                        : isAE
-                                                            ? 'bg-white border-indigo-100 hover:border-indigo-300'
-                                                            : 'bg-white border-slate-100 hover:border-slate-300'
+                                                            ? 'bg-indigo-50 border-indigo-400 shadow-sm ring-1 ring-indigo-400'
+                                                            : isAE
+                                                                ? 'bg-white border-indigo-100 hover:border-indigo-300'
+                                                                : 'bg-white border-slate-100 hover:border-slate-300'
                                                         }`}
                                                 >
                                                     <div className="min-w-0 pr-2">
@@ -245,15 +249,15 @@ const AssignReviewerModal = ({ paper, mode = 'reviewer', onClose, onAssignmentCo
                                                                 {c.full_name}
                                                             </p>
 
-                                                            {/* Visual Category Badges */}
-                                                            {isAE && (
-                                                                <span className="text-[9px] font-black uppercase tracking-tight px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 border border-indigo-200">
-                                                                    ★ Associate Editor
+                                                            {/* ✅ PROPER VISUAL BADGES BASED ON ROLE */}
+                                                            {isReviewer && (
+                                                                <span className="text-[9px] font-black uppercase tracking-tight px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 border border-purple-200">
+                                                                    ★ Active Reviewer
                                                                 </span>
                                                             )}
-                                                            {isMember && (
-                                                                <span className="text-[9px] font-bold uppercase tracking-tight px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                                                    EMPA Member
+                                                            {isAE && (
+                                                                <span className="text-[9px] font-black uppercase tracking-tight px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 border border-indigo-200">
+                                                                    Associate Editor
                                                                 </span>
                                                             )}
                                                             {isAuthor && (
@@ -261,10 +265,15 @@ const AssignReviewerModal = ({ paper, mode = 'reviewer', onClose, onAssignmentCo
                                                                     Registered Author
                                                                 </span>
                                                             )}
+                                                            {isMember && (
+                                                                <span className="text-[9px] font-bold uppercase tracking-tight px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                                    EMPA Member
+                                                                </span>
+                                                            )}
                                                         </div>
 
                                                         <p className="text-[10px] text-slate-400 truncate mt-1">
-                                                            {c.email} • {c.affiliation || (isMember ? 'EMPA' : 'Independent')}
+                                                            {c.email} • {c.affiliation || 'EMPA'}
                                                         </p>
                                                     </div>
 

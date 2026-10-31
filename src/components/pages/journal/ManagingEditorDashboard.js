@@ -10,7 +10,7 @@ import { Link } from 'react-router-dom';
 import UploadProductionModal from './Editor/UploadProductionModal';
 import {
     Download, ArrowRight, UserPlus, XCircle, FileCheck, Archive,
-    Landmark, MessageSquare, AlertTriangle, History, Search, CheckCircle, Loader2, X, Eye, Info, Layers, Mail
+    Landmark, MessageSquare, AlertTriangle, History, Search, CheckCircle, Loader2, X, Eye, Info, Layers, Mail, Send
 } from 'lucide-react';
 import LatexRenderer from '../../common/LatexRenderer';
 import LatexEditor from '../../common/LatexEditor';
@@ -18,14 +18,6 @@ import AddArchivedEdition from './Editor/AddArchivedEdition';
 import EditorialContactModal from './Editor/EditorialContactModal';
 import RubricScoreDisplay from './common/RubricScoreDisplay';
 import { toast } from 'react-toastify';
-
-const PRODUCTION_STEPS = {
-    'ACCEPTED': { label: 'Assign Staff', icon: <UserPlus size={16} className="inline mr-2" />, color: 'bg-emerald-600 hover:bg-emerald-700', modal: 'assign-production' },
-    'INPRODUCTION': { label: 'Start Language Editing', color: 'bg-purple-600 hover:bg-purple-700', nextStatus: 'Language Edition' },
-    'PRODUCTION': { label: 'Start Language Editing', color: 'bg-purple-600 hover:bg-purple-700', nextStatus: 'Language Edition' },
-    'LANGUAGEEDITION': { label: 'Start Copy Layout', color: 'bg-indigo-600 hover:bg-indigo-700', nextStatus: 'Copy Layout Edition' },
-    'COPYLAYOUTEDITION': { label: 'Send Proof to Author', color: 'bg-orange-600 hover:bg-orange-700', modal: 'send-proof' },
-};
 
 const ManagingEditorDashboard = () => {
     const { authToken, userRole, isAuthReady } = useContext(AuthContext);
@@ -503,7 +495,6 @@ const ManagingEditorDashboard = () => {
                                                                                 Verdict: {rev.recommendation || 'N/A'}
                                                                             </span>
                                                                             
-                                                                            {/* Direct Contact Button in Intelligence Box */}
                                                                             {rev.reviewer_email && (
                                                                                 <button
                                                                                     type="button"
@@ -523,10 +514,8 @@ const ManagingEditorDashboard = () => {
                                                                         </div>
                                                                     </div>
 
-                                                                    {/* ✅ RENDER RUBRICS */}
                                                                     <RubricScoreDisplay rawScores={rev.rubric_scores} />
 
-                                                                    {/* Confidential note to editor */}
                                                                     {rev.comments_for_editor && (
                                                                         <div className="p-2.5 bg-amber-50/70 rounded-xl border border-amber-100 text-amber-900 italic">
                                                                             <span className="font-black text-[9px] uppercase block mb-1 text-amber-700">Confidential Note to Editor:</span>
@@ -534,7 +523,6 @@ const ManagingEditorDashboard = () => {
                                                                         </div>
                                                                     )}
 
-                                                                    {/* Public feedback to author */}
                                                                     <div className="text-slate-600 leading-relaxed pt-1">
                                                                         <span className="font-black text-[9px] uppercase block mb-1 text-slate-400">Comments for Author:</span>
                                                                         <LatexRenderer content={rev.comments_for_author} />
@@ -608,6 +596,94 @@ const ManagingEditorDashboard = () => {
                                                     <div className={`flex items-center justify-center gap-2 py-3 rounded-2xl border-2 font-black text-[10px] uppercase tracking-widest ${p.status?.toUpperCase() === 'PUBLISHED' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-rose-50 border-rose-100 text-rose-600'}`}>
                                                         {p.status?.toUpperCase() === 'PUBLISHED' ? <CheckCircle size={14} /> : <XCircle size={14} />} {p.status}
                                                     </div>
+                                                </div>
+                                            )}
+
+                                            {/* --- PRODUCTION TAB ACTIONS (RESTORED & BULLETPROOF) --- */}
+                                            {activeTab === 'production' && (
+                                                <div className="space-y-3">
+                                                    {(() => {
+                                                        const normalizedStatus = (p.status || '').toUpperCase().replace(/[\s_]+/g, '');
+                                                        const isManager = ['MANAGING_EDITOR', 'EDITOR_IN_CHIEF', 'EIC', 'ADMIN'].includes(normalizedRole);
+
+                                                        return (
+                                                            <div className="space-y-2.5">
+                                                                {/* 1. ASSIGN / REASSIGN STAFF BUTTON */}
+                                                                {isManager && (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => setModalState({ type: 'assign-production', paper: p })}
+                                                                        className={`w-full py-3.5 text-white font-black text-xs rounded-2xl uppercase tracking-widest shadow-md transition-all flex items-center justify-center gap-2 active:scale-95 ${
+                                                                            !p.production_staff_id 
+                                                                                ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-100 ring-2 ring-emerald-400' 
+                                                                                : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100'
+                                                                        }`}
+                                                                    >
+                                                                        <UserPlus size={16} />
+                                                                        <span>{!p.production_staff_id ? 'Assign Production Staff' : 'Reassign Staff'}</span>
+                                                                    </button>
+                                                                )}
+
+                                                                {/* 2. PRODUCTION PIPELINE STAGES */}
+                                                                {normalizedStatus === 'PROOFREADING' ? (
+                                                                    <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-center shadow-inner">
+                                                                        <Loader2 className="animate-spin mx-auto text-amber-600 mb-2" size={20} />
+                                                                        <span className="text-[10px] font-black text-amber-800 uppercase tracking-widest block">
+                                                                            Awaiting Author Proofreading
+                                                                        </span>
+                                                                        <span className="text-[9px] text-amber-600">48–72h turnaround in progress</span>
+                                                                    </div>
+                                                                ) : (normalizedStatus === 'READYTOPUBLISH' || normalizedStatus === 'READYFORPUBLICATION') ? (
+                                                                    isManager ? (
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => setModalState({ type: 'upload-production', paper: p })}
+                                                                            className="w-full py-4 bg-blue-900 hover:bg-slate-900 text-white font-black text-xs rounded-2xl shadow-xl uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-2"
+                                                                        >
+                                                                            <FileCheck size={16} /> Finalize & Publish
+                                                                        </button>
+                                                                    ) : (
+                                                                        <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl text-center">
+                                                                            <CheckCircle className="mx-auto text-emerald-600 mb-1" size={18} />
+                                                                            <span className="text-[10px] font-black text-emerald-800 uppercase">Pending EIC Publication</span>
+                                                                        </div>
+                                                                    )
+                                                                ) : (normalizedStatus === 'COPYLAYOUTEDITION' || normalizedStatus === 'COPYLAYOUT') ? (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => setModalState({ type: 'send-proof', paper: p })}
+                                                                        className="w-full py-3.5 bg-orange-600 hover:bg-orange-700 text-white font-black text-xs rounded-2xl uppercase tracking-widest shadow-md transition-all flex items-center justify-center gap-2"
+                                                                    >
+                                                                        <Send size={15} /> Send Proof to Author
+                                                                    </button>
+                                                                ) : (normalizedStatus === 'LANGUAGEEDITION' || normalizedStatus === 'LANGUAGEEDITING') ? (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => updateStatus(p.id, 'Copy Layout Edition')}
+                                                                        className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs rounded-2xl uppercase tracking-widest shadow-md transition-all"
+                                                                    >
+                                                                        Start Copy Layout
+                                                                    </button>
+                                                                ) : (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => updateStatus(p.id, 'Language Edition')}
+                                                                        className="w-full py-3.5 bg-purple-600 hover:bg-purple-700 text-white font-black text-xs rounded-2xl uppercase tracking-widest shadow-md transition-all"
+                                                                    >
+                                                                        Start Language Editing
+                                                                    </button>
+                                                                )}
+
+                                                                {/* Assigned Staff ID Badge */}
+                                                                {p.production_staff_id && (
+                                                                    <div className="px-3.5 py-2 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center text-[9px] font-black text-slate-500">
+                                                                        <span>STAFF ASSIGNED:</span>
+                                                                        <span className="text-slate-800 font-bold uppercase font-mono">ID #{p.production_staff_id}</span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    })()}
                                                 </div>
                                             )}
                                         </div>
@@ -721,8 +797,6 @@ const ManagingEditorDashboard = () => {
 };
 
 export default ManagingEditorDashboard;
-
-
 
 
 
@@ -1355,80 +1429,80 @@ export default ManagingEditorDashboard;
 //                                         )}
 
 //                                         {/* --- PRODUCTION TAB (Dynamic Mapping) --- */}
-//                                         {activeTab === 'production' && (
-//                                             <div className="space-y-3">
-//                                                 {(() => {
-//                                                     const s = (p.status || '').toUpperCase().replace(/\s+/g, '');
-//                                                     const step = PRODUCTION_STEPS[s];
-//                                                     const isManager = ['MANAGING_EDITOR', 'EDITOR_IN_CHIEF', 'ADMIN'].includes(normalizedRole);
+                //                         {activeTab === 'production' && (
+                //                             <div className="space-y-3">
+                //                                 {(() => {
+                //                                     const s = (p.status || '').toUpperCase().replace(/\s+/g, '');
+                //                                     const step = PRODUCTION_STEPS[s];
+                //                                     const isManager = ['MANAGING_EDITOR', 'EDITOR_IN_CHIEF', 'ADMIN'].includes(normalizedRole);
 
-//                                                     if (!p.production_staff_id) {
-//                                                         return (
-//                                                             <button onClick={() => setModalState({ type: 'assign-production', paper: p })} className="w-full py-4 bg-emerald-600 text-white font-black text-xs rounded-2xl hover:bg-emerald-700 shadow-lg flex items-center justify-center gap-2 uppercase tracking-widest">
-//                                                                 <UserPlus size={16} /> Assign Staff
-//                                                             </button>
-//                                                         );
-//                                                     }
+                //                                     if (!p.production_staff_id) {
+                //                                         return (
+                //                                             <button onClick={() => setModalState({ type: 'assign-production', paper: p })} className="w-full py-4 bg-emerald-600 text-white font-black text-xs rounded-2xl hover:bg-emerald-700 shadow-lg flex items-center justify-center gap-2 uppercase tracking-widest">
+                //                                                 <UserPlus size={16} /> Assign Staff
+                //                                             </button>
+                //                                         );
+                //                                     }
 
-//                                                     if (s === 'PROOFREADING') {
-//                                                         return (
-//                                                             <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-center shadow-inner">
-//                                                                 <Loader2 className="animate-spin mx-auto text-amber-600 mb-2" size={20} />
-//                                                                 <span className="text-[10px] font-black text-amber-800 uppercase tracking-widest">Awaiting Author</span>
-//                                                             </div>
-//                                                         );
-//                                                     }
+                //                                     if (s === 'PROOFREADING') {
+                //                                         return (
+                //                                             <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-center shadow-inner">
+                //                                                 <Loader2 className="animate-spin mx-auto text-amber-600 mb-2" size={20} />
+                //                                                 <span className="text-[10px] font-black text-amber-800 uppercase tracking-widest">Awaiting Author</span>
+                //                                             </div>
+                //                                         );
+                //                                     }
 
-//                                                     if (s === 'READYTOPUBLISH' || s === 'READYFORPUBLICATION') {
-//                                                         return isManager ? (
-//                                                             <div className="space-y-4">
-//                                                                 {p.author_revision_notes && (
-//                                                                     <div className="p-4 bg-emerald-50 border-l-4 border-emerald-500 rounded-r-2xl text-xs italic">
-//                                                                         <span className="font-black text-emerald-700 block mb-1">AUTHOR NOTE:</span>
-//                                                                         <LatexRenderer content={p.author_revision_notes} />
-//                                                                     </div>
-//                                                                 )}
-//                                                                 <button onClick={() => setModalState({ type: 'upload-production', paper: p })} className="w-full py-4 bg-blue-900 text-white font-black text-xs rounded-2xl shadow-xl hover:bg-slate-800 uppercase tracking-widest transition-all active:scale-95">
-//                                                                     <FileCheck size={16} className="inline mr-2" /> Finalize & Publish
-//                                                                 </button>
-//                                                             </div>
-//                                                         ) : (
-//                                                             <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-center">
-//                                                                 <CheckCircle className="mx-auto text-emerald-600 mb-1" size={20} />
-//                                                                 <span className="text-[10px] font-black text-emerald-800 uppercase">Pending EIC Approval</span>
-//                                                             </div>
-//                                                         );
-//                                                     }
+                //                                     if (s === 'READYTOPUBLISH' || s === 'READYFORPUBLICATION') {
+                //                                         return isManager ? (
+                //                                             <div className="space-y-4">
+                //                                                 {p.author_revision_notes && (
+                //                                                     <div className="p-4 bg-emerald-50 border-l-4 border-emerald-500 rounded-r-2xl text-xs italic">
+                //                                                         <span className="font-black text-emerald-700 block mb-1">AUTHOR NOTE:</span>
+                //                                                         <LatexRenderer content={p.author_revision_notes} />
+                //                                                     </div>
+                //                                                 )}
+                //                                                 <button onClick={() => setModalState({ type: 'upload-production', paper: p })} className="w-full py-4 bg-blue-900 text-white font-black text-xs rounded-2xl shadow-xl hover:bg-slate-800 uppercase tracking-widest transition-all active:scale-95">
+                //                                                     <FileCheck size={16} className="inline mr-2" /> Finalize & Publish
+                //                                                 </button>
+                //                                             </div>
+                //                                         ) : (
+                //                                             <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-center">
+                //                                                 <CheckCircle className="mx-auto text-emerald-600 mb-1" size={20} />
+                //                                                 <span className="text-[10px] font-black text-emerald-800 uppercase">Pending EIC Approval</span>
+                //                                             </div>
+                //                                         );
+                //                                     }
 
-//                                                     if (step) {
-//                                                         return (
-//                                                             <button
-//                                                                 onClick={() => step.modal ? setModalState({ type: step.modal, paper: p }) : updateStatus(p.id, step.nextStatus)}
-//                                                                 className={`w-full py-4 text-white font-black text-xs rounded-2xl uppercase shadow-md transition-all ${step.color}`}
-//                                                             >
-//                                                                 {step.icon} {step.label}
-//                                                             </button>
-//                                                         );
-//                                                     }
+                //                                     if (step) {
+                //                                         return (
+                //                                             <button
+                //                                                 onClick={() => step.modal ? setModalState({ type: step.modal, paper: p }) : updateStatus(p.id, step.nextStatus)}
+                //                                                 className={`w-full py-4 text-white font-black text-xs rounded-2xl uppercase shadow-md transition-all ${step.color}`}
+                //                                             >
+                //                                                 {step.icon} {step.label}
+                //                                             </button>
+                //                                         );
+                //                                     }
 
-//                                                     return null;
-//                                                 })()}
+                //                                     return null;
+                //                                 })()}
 
-//                                                 {p.production_staff_id && p.status !== 'Published' && (
-//                                                     <div className="mt-2 px-4 py-2 bg-slate-50 rounded-xl border border-slate-100 flex justify-between items-center text-[9px] font-black text-slate-400">
-//                                                         <span>STAFF ASSIGNED:</span>
-//                                                         <span className="text-slate-600 font-bold uppercase">ID #{p.production_staff_id}</span>
-//                                                     </div>
-//                                                 )}
-//                                             </div>
-//                                         )}
-//                                     </div>
-//                                 </div>
-//                                 <div className="mt-10 pt-8 border-t border-slate-50"><WorkflowStepper currentStatus={p.status} role="MANAGING_EDITOR" /></div>
-//                             </div>
-//                         ))}
-//                     </div>
-//                 )}
+                //                                 {p.production_staff_id && p.status !== 'Published' && (
+                //                                     <div className="mt-2 px-4 py-2 bg-slate-50 rounded-xl border border-slate-100 flex justify-between items-center text-[9px] font-black text-slate-400">
+                //                                         <span>STAFF ASSIGNED:</span>
+                //                                         <span className="text-slate-600 font-bold uppercase">ID #{p.production_staff_id}</span>
+                //                                     </div>
+                //                                 )}
+                //                             </div>
+                //                         )}
+                //                     </div>
+                //                 </div>
+                //                 <div className="mt-10 pt-8 border-t border-slate-50"><WorkflowStepper currentStatus={p.status} role="MANAGING_EDITOR" /></div>
+                //             </div>
+                //         ))}
+                //     </div>
+                // )}
 
 //                 {/* --- MODALS --- */}
 //                 {
