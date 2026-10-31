@@ -322,19 +322,21 @@ const ManagingEditorDashboard = () => {
                                             </div>
 
                                             {/* ========================================================================= */}
-                                            {/* --- VERSION COMPARISON BOX: ORIGINAL PDF VS REVISED PDF ---              */}
+                                            {/* --- VERSION COMPARISON BOX: ORIGINAL PDF VS REVISED/PRODUCTION PDF ---    */}
                                             {/* ========================================================================= */}
-                                            {(p.author_revision_notes || p.previous_manuscript_file_url || normalizedStatus === 'REVISIONSUBMITTED') && (
+                                            {(p.author_revision_notes || p.previous_manuscript_file_url || p.production_file_url || normalizedStatus === 'REVISIONSUBMITTED') && (
                                                 <div className="mt-4 p-5 bg-amber-50/80 border-2 border-amber-200 rounded-3xl space-y-4 shadow-sm">
                                                     <div className="flex items-center justify-between border-b border-amber-200 pb-2.5">
                                                         <div className="flex items-center gap-2">
                                                             <History size={18} className="text-amber-700" />
                                                             <span className="text-xs font-black text-amber-900 uppercase tracking-wider">
-                                                                Manuscript Version Comparison & Rebuttal
+                                                                {p.production_file_url 
+                                                                    ? "Production File Comparison (Original Manuscript vs. Galley Proof)" 
+                                                                    : "Manuscript Version Comparison & Rebuttal"}
                                                             </span>
                                                         </div>
                                                         <span className="text-[10px] font-bold uppercase bg-amber-200 text-amber-800 px-2.5 py-0.5 rounded-full">
-                                                            Revision Evaluation
+                                                            {p.production_file_url ? "Production Stage" : "Revision Evaluation"}
                                                         </span>
                                                     </div>
 
@@ -346,48 +348,65 @@ const ManagingEditorDashboard = () => {
                                                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">
                                                                     Version 1 — Original Submission
                                                                 </span>
-                                                                <p className="text-xs text-slate-600 mt-0.5 font-medium">Initial submission before reviewer feedback</p>
+                                                                <p className="text-xs text-slate-600 mt-0.5 font-medium">
+                                                                    Initial author submission before production/typesetting
+                                                                </p>
                                                             </div>
-                                                            {p.previous_manuscript_file_url ? (
+                                                            {/* ✅ SMART FALLBACK: If in production, use manuscript_file_url as v1! */}
+                                                            {(p.previous_manuscript_file_url || (p.production_file_url && p.manuscript_file_url)) ? (
                                                                 <a
-                                                                    href={`${STATIC_ASSETS_BASE_URL}/uploads/${p.previous_manuscript_file_url.replace(/^(\/?uploads\/)/, "")}`}
+                                                                    href={`${STATIC_ASSETS_BASE_URL}/uploads/${(p.previous_manuscript_file_url || p.manuscript_file_url).replace(/^(\/?uploads\/)/, "")}`}
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                     className="inline-flex items-center justify-center gap-1.5 py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all"
                                                                 >
-                                                                    <Download size={14} /> Download Original PDF
+                                                                    <Download size={14} /> Download Original Manuscript (v1)
                                                                 </a>
                                                             ) : (
                                                                 <span className="text-xs text-slate-400 italic">No prior version archived.</span>
                                                             )}
                                                         </div>
 
-                                                        {/* Version 2: Revised */}
+                                                        {/* Version 2: Revised OR Production Galley Proof */}
                                                         <div className="p-4 bg-white rounded-2xl border border-emerald-300 shadow-sm flex flex-col justify-between space-y-2 bg-emerald-50/30">
                                                             <div>
                                                                 <span className="text-[10px] font-black text-emerald-700 uppercase tracking-widest block">
-                                                                    Version 2 — Revised Manuscript
+                                                                    {p.production_file_url ? "Version 2 — Formatted Galley Proof" : "Version 2 — Revised Manuscript"}
                                                                 </span>
-                                                                <p className="text-xs text-slate-600 mt-0.5 font-medium">Updated submission addressing reviewer remarks</p>
+                                                                <p className="text-xs text-slate-600 mt-0.5 font-medium">
+                                                                    {p.production_file_url ? "Typeset camera-ready edition for publication" : "Updated submission addressing reviewer remarks"}
+                                                                </p>
                                                             </div>
                                                             <a
-                                                                href={`${STATIC_ASSETS_BASE_URL}/uploads/${(p.manuscript_file_url || '').replace(/^(\/?uploads\/)/, "")}`}
+                                                                href={`${STATIC_ASSETS_BASE_URL}/uploads/${(p.production_file_url || p.manuscript_file_url || '').replace(/^(\/?uploads\/)/, "")}`}
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
                                                                 className="inline-flex items-center justify-center gap-1.5 py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm transition-all"
                                                             >
-                                                                <Download size={14} /> Download Revised PDF
+                                                                <Download size={14} /> {p.production_file_url ? "Download Galley Proof (v2)" : "Download Revised PDF (v2)"}
                                                             </a>
                                                         </div>
                                                     </div>
 
-                                                    {/* Author's Point-by-Point Rebuttal Notes */}
-                                                    {p.author_revision_notes && (
-                                                        <div className="p-4 bg-white rounded-2xl border border-amber-200 text-xs text-slate-800 leading-relaxed font-serif">
-                                                            <span className="text-[10px] font-black text-amber-800 uppercase tracking-widest block mb-1">
-                                                                Author's Point-by-Point Response to Reviewers:
-                                                            </span>
-                                                            <LatexRenderer content={p.author_revision_notes} />
+                                                    {/* Author or Production Notes */}
+                                                    {(p.author_revision_notes || p.production_notes) && (
+                                                        <div className="p-4 bg-white rounded-2xl border border-amber-200 text-xs text-slate-800 leading-relaxed font-serif space-y-2">
+                                                            {p.author_revision_notes && (
+                                                                <div>
+                                                                    <span className="text-[10px] font-black text-amber-800 uppercase tracking-widest block mb-0.5">
+                                                                        Author's Revision Notes / Rebuttal:
+                                                                    </span>
+                                                                    <LatexRenderer content={p.author_revision_notes} />
+                                                                </div>
+                                                            )}
+                                                            {p.production_notes && (
+                                                                <div className={p.author_revision_notes ? "pt-2 border-t border-slate-100" : ""}>
+                                                                    <span className="text-[10px] font-black text-indigo-700 uppercase tracking-widest block mb-0.5">
+                                                                        Production Instructions / Layout Notes:
+                                                                    </span>
+                                                                    <LatexRenderer content={p.production_notes} />
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     )}
                                                 </div>
@@ -797,6 +816,7 @@ const ManagingEditorDashboard = () => {
 };
 
 export default ManagingEditorDashboard;
+
 
 
 
