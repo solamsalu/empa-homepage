@@ -246,18 +246,20 @@ const AssociateEditorDashboard = () => {
                                                                 </span>
                                                                 <p className="text-xs text-slate-500 mt-0.5">Initial version evaluated in Round 1</p>
                                                             </div>
-                                                            {p.previous_manuscript_file_url ? (
+                                                            {/* ✅ SMART FALLBACK: If previous exists, use it. If in production, use manuscript_file_url! */}
+                                                            {(p.previous_manuscript_file_url || (p.production_file_url && p.manuscript_file_url)) ? (
                                                                 <a
-                                                                    href={`${STATIC_ASSETS_BASE_URL}/uploads/${p.previous_manuscript_file_url.replace(/^(\/?uploads\/)/, "")}`}
+                                                                    href={`${STATIC_ASSETS_BASE_URL}/uploads/${(p.previous_manuscript_file_url || p.manuscript_file_url).replace(/^(\/?uploads\/)/, "")}`}
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                     className="inline-flex items-center justify-center gap-1.5 py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all"
                                                                 >
-                                                                    <Download size={14} /> Download Original PDF
+                                                                    <Download size={14} /> Download Original Manuscript (v1)
                                                                 </a>
                                                             ) : (
                                                                 <span className="text-xs text-slate-400 italic">Original file path not archived.</span>
                                                             )}
+                                                            
                                                         </div>
 
                                                         {/* Version 2: Revised */}
